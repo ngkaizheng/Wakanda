@@ -72,7 +72,7 @@ class ProfileRepository {
       return {};
     }
   }
-  
+
   Future<Map<String, dynamic>> getPreviousUserData(
       String companyId, DateTime effectiveDate) async {
     DateTime lastDay = DateTime(effectiveDate.year, effectiveDate.month + 1, 0);
@@ -144,49 +144,6 @@ class ProfileRepository {
     }
   }
 
-  // Future<Map<String, dynamic>> getUserData(String companyId) async {
-  //   try {
-  //     final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //         .collection('users')
-  //         .doc(companyId)
-  //         .get();
-
-  //     if (userDoc.exists) {
-  //       final userData = userDoc.data() as Map<String, dynamic>;
-
-  //       // Fetch data from 'saleHistory' subcollection
-  //       final QuerySnapshot saleHistorySnapshot =
-  //           await userDoc.reference.collection('saleHistory').get();
-  //       final List<Map<String, dynamic>> saleHistoryData = saleHistorySnapshot
-  //           .docs
-  //           .map<Map<String, dynamic>>(
-  //               (doc) => doc.data() as Map<String, dynamic>)
-  //           .toList();
-
-  //       // Fetch data from 'bankHistory' subcollection
-  //       final QuerySnapshot bankHistorySnapshot =
-  //           await userDoc.reference.collection('bankHistory').get();
-  //       final List<Map<String, dynamic>> bankHistoryData = bankHistorySnapshot
-  //           .docs
-  //           .map<Map<String, dynamic>>(
-  //               (doc) => doc.data() as Map<String, dynamic>)
-  //           .toList();
-
-  //       // Add saleHistoryData and bankHistoryData to userData
-  //       userData['saleHistory'] = saleHistoryData;
-  //       userData['bankHistory'] = bankHistoryData;
-
-  //       return userData;
-  //     } else {
-  //       logger.w('User not found for companyId: $companyId');
-  //       return {};
-  //     }
-  //   } catch (e) {
-  //     logger.e('Error fetching user data: $e');
-  //     return {};
-  //   }
-  // }
-
   Future<List<Map<String, dynamic>>> getAllUserData() async {
     try {
       final QuerySnapshot querySnapshot =
@@ -209,51 +166,6 @@ class ProfileRepository {
 
   final CollectionReference usersCollection =
       FirebaseFirestore.instance.collection('users');
-
-  // Future<void> createUser(Map<String, dynamic> userData) async {
-  //   try {
-  //     await usersCollection.add(userData);
-  //   } catch (e) {
-  //     // Handle errors as needed
-  //     logger.w('Error creating user: $e');
-  //     rethrow; // Rethrow the exception for the calling code to handle
-  //   }
-  // }
-
-  // Future<void> createUser(
-  //     String companyId, Map<String, dynamic> userData) async {
-  //   try {
-  //     // Use employeeId as the document ID
-  //     await usersCollection.doc(companyId).set(userData);
-
-  //   } catch (e) {
-  //     // Handle errors as needed
-  //     logger.w('Error creating user: $e');
-  //     rethrow; // Rethrow the exception for the calling code to handle
-  //   }
-  // }
-
-  // Future<void> createUser(
-  //   String companyId,
-  //   Map<String, dynamic> personalInfo,
-  //   Map<String, dynamic> salaryHistory,
-  //   Map<String, dynamic> bankHistory,
-  // ) async {
-  //   try {
-  //     // Use companyId as the document ID
-  //     await usersCollection.doc(companyId).set({
-  //       ...personalInfo,
-  //       'financialInfo': {
-  //         'salaryHistory': [salaryHistory],
-  //         'bankHistory': [bankHistory],
-  //       },
-  //     });
-  //   } catch (e) {
-  //     // Handle errors as needed
-  //     logger.w('Error creating user: $e');
-  //     rethrow; // Rethrow the exception for the calling code to handle
-  //   }
-  // }
 
   Future<void> createUser(
     String companyId,
@@ -335,7 +247,7 @@ class ProfileRepository {
     }
   }
 
-    Future<bool> checkDuplicateEmail(String email) async {
+  Future<bool> checkDuplicateEmail(String email) async {
     // Query the "users" collection to check if the email already exists
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -360,7 +272,7 @@ class ProfileRepository {
     }
   }
 
-  Future<void> updateStatus(String companyId) async {
+  Future<void> deactivateStatus(String companyId) async {
     try {
       await FirebaseFirestore.instance
           .collection('users')
@@ -368,6 +280,20 @@ class ProfileRepository {
           .update({'status': false});
 
       logger.i('Status updated successfully for companyId: $companyId');
+    } catch (e) {
+      logger.e('Error updating status: $e');
+      // Handle the error as needed
+    }
+  }
+
+  Future<void> activateStatus(String companyId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(companyId)
+          .update({'status': true});
+
+      logger.i('Status activated successfully for companyId: $companyId');
     } catch (e) {
       logger.e('Error updating status: $e');
       // Handle the error as needed
@@ -401,6 +327,36 @@ class ProfileRepository {
       logger.e('Error fetching user password by email: $e');
       // Handle the error as needed
       throw Exception('Error fetching user password by email');
+    }
+  }
+
+  Future<String> getUserProfileImage(String companyId) async {
+    try {
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users') // Update the collection name as needed
+          .where('companyId', isEqualTo: companyId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final Map<String, dynamic> companyData =
+            querySnapshot.docs.first.data() as Map<String, dynamic>;
+
+        final String? profileImage = companyData['image'];
+
+        if (profileImage != null) {
+          return profileImage;
+        } else {
+          // Return an empty string or a default image URL
+          return ''; // You can change this to your desired default value
+        }
+      } else {
+        // Return an empty string or a default image URL
+        return ''; // You can change this to your desired default value
+      }
+    } catch (e) {
+      logger.e('Error fetching user profile image by companyId: $e');
+      // Handle the error as needed
+      throw Exception('Error fetching user profile image by companyId');
     }
   }
 

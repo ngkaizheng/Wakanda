@@ -1,15 +1,13 @@
 // main.dart
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
-import 'package:flutter_application_1/app.dart';
-import 'package:open_file/open_file.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 import 'package:logger/logger.dart';
+import 'utils/firebase_options.dart';
+import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/app.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class ReceivedNotification {
   ReceivedNotification({
@@ -72,23 +70,13 @@ Future<void> initNotification() async {
         (NotificationResponse notificationResponse) async {
       logger.i('Notification clicked');
       _handleNotificationInteraction(notificationResponse);
-      // switch (notificationResponse.notificationResponseType) {
-      //   case NotificationResponseType.selectedNotification:
-      //     selectNotificationStream.add(notificationResponse.payload);
-      //     logger.i(notificationResponse.payload);
-      //     break;
-      //   case NotificationResponseType.selectedNotificationAction:
-      //     if (notificationResponse.actionId == navigationActionId) {
-      //       selectNotificationStream.add(notificationResponse.payload);
-      //     }
-      //     break;
-      // }
     },
     onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
   );
 }
 
 Future askRequiredPermission() async {
+  // ignore: unused_local_variable
   Map<Permission, PermissionStatus> statuses = await [
     Permission.storage,
     Permission.manageExternalStorage,

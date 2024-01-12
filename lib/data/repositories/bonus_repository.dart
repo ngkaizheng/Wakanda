@@ -102,6 +102,3 @@ Future<void> deleteBonus(String companyId, DateTime selectedDate) async {
     // Handle the error, e.g., display an error message
   }
 }
-
-// Example usage:
-// storeBonus('yourCompanyId', DateTime.now(), 500.0);

@@ -1,31 +1,24 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/all_profile_page.dart';
-import 'package:flutter_application_1/Leave_main_page.dart';
-import 'package:flutter_application_1/Claim_main_page.dart';
-import 'package:flutter_application_1/making_attendance.dart';
 import 'package:logger/logger.dart';
-import 'package:flutter_application_1/salary_page.dart';
-import 'package:flutter_application_1/login_page.dart';
-import 'package:flutter_application_1/profile_page.dart';
-import 'package:flutter_application_1/create_user_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_1/data/repositories/profile_repository.dart';
-import 'package:flutter_application_1/data/repositories/announcement_repository.dart';
-
-import 'package:flutter_application_1/user_management_page.dart';
-//import 'package:flutter_application_1/Leave_main_page.dart';
-import 'package:flutter_application_1/Apply_FullLeave_page.dart';
-import 'package:flutter_application_1/managerPart/checkPendingLeave.dart';
-import 'package:flutter_application_1/managerPart/checkPendingClaim.dart';
-import 'package:flutter_application_1/Announcement.dart';
-import 'package:flutter_application_1/attendance_view.dart';
-
-import 'package:flutter_application_1/salary_management_page.dart';
-import 'package:flutter_application_1/view_salary_page.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:flutter_application_1/login_page.dart';
+import 'package:flutter_application_1/attendance/making_attendance.dart';
+import 'package:flutter_application_1/attendance/attendance_view.dart';
+import 'package:flutter_application_1/user/user_management_page.dart';
+import 'package:flutter_application_1/user/profile_page.dart';
+import 'package:flutter_application_1/data/repositories/profile_repository.dart';
+import 'package:flutter_application_1/data/repositories/announcement_repository.dart';
+import 'package:flutter_application_1/announcement/Announcement.dart';
+import 'package:flutter_application_1/leave/Leave_main_page.dart';
+import 'package:flutter_application_1/leave/checkPendingLeave.dart';
+import 'package:flutter_application_1/claim/Claim_main_page.dart';
+import 'package:flutter_application_1/claim/checkPendingClaim.dart';
+import 'package:flutter_application_1/salary/salary_management_page.dart';
+import 'package:flutter_application_1/salary/view_salary_page.dart';
 
 class MainPage extends StatefulWidget {
   final String companyId;
@@ -47,20 +40,19 @@ class _MainPageState extends State<MainPage> {
   String companyId = "";
   String userPosition = "";
   Map<String, dynamic>? attendanceDataInMainPage;
-  //late AttendancePageManager _attendancePageManager;
-  //late AttendancePage _attendancePage;
-  StreamSubscription <QuerySnapshot>? _attendanceStream;
-  String _currentDate= '';
+  // ignore: unused_field
+  StreamSubscription<QuerySnapshot>? _attendanceStream;
+  String _currentDate = '';
+  bool haveUnseenNotification = false;
+  bool havePendingLeave = false;
 
-  
-
-    //getCurrentDateTime
+  //getCurrentDateTime
   Future<void> _getCurrentDate() async {
     DateTime now = DateTime.now();
     _currentDate = '${now.day}-${now.month}-${now.year}';
   }
-  
-  void listenToAttendanceChanges(){
+
+  void listenToAttendanceChanges() {
     _attendanceStream = _attendanceStream = FirebaseFirestore.instance
         .collection('Attendance')
         .doc(widget.companyId)
@@ -68,48 +60,71 @@ class _MainPageState extends State<MainPage> {
         .orderBy('CheckInTime', descending: true)
         .snapshots(includeMetadataChanges: true)
         .listen((QuerySnapshot snapshot) {
-
-          if(snapshot.docs.isNotEmpty){
-            setState((){
-            attendanceDataInMainPage = snapshot.docs.first.data() as Map<String, dynamic> ;
-            });
-            print("data:${attendanceDataInMainPage}");
-                if (attendanceDataInMainPage != null &&
-          attendanceDataInMainPage!.containsKey('CheckInTime') &&
-          attendanceDataInMainPage!.containsKey('CheckOutTime'))
-          print("condition is achieved");
-            
-          }
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          attendanceDataInMainPage =
+              snapshot.docs.first.data() as Map<String, dynamic>;
         });
+        print("data:${attendanceDataInMainPage}");
+        if (attendanceDataInMainPage != null &&
+            attendanceDataInMainPage!.containsKey('CheckInTime') &&
+            attendanceDataInMainPage!.containsKey('CheckOutTime'))
+          print("condition is achieved");
+      }
+    });
+  }
 
+  Future<void> hasUnreadAnnouncement(String companyId) async {
+    try {
+      final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('announcements')
+          // .where('companyId', isEqualTo: companyId)
+          .get();
+
+      for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+
+        // Check if the document has "Read_by_${companyId}" field and it is false
+        if (data.containsKey('Read_by_$companyId') &&
+            data['Read_by_$companyId'] == false) {
+          haveUnseenNotification = true;
+        }
+      }
+    } catch (e) {
+      // Handle any errors that might occur during the process
+      print('Error checking announcements: $e');
+    }
+  }
+
+  Future<void> getPendingLeaveUsers() async {
+    // Get all documents from 'users' collection
+    QuerySnapshot usersQuery =
+        await FirebaseFirestore.instance.collection('users').get();
+
+    // Iterate through each user document
+    for (QueryDocumentSnapshot userDoc in usersQuery.docs) {
+      String companyId = userDoc.id;
+      // Check the 'leaveHistory' sub-collection for 'Pending' status
+      QuerySnapshot leaveHistoryQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(companyId)
+          .collection('leaveHistory')
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      // If there are pending leave records, add the user ID to the list
+      if (leaveHistoryQuery.docs.isNotEmpty) {
+        havePendingLeave = true;
+      }
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    /*profileRepository
-        .getUserProfileImage(widget.companyId)
-        .then((value) => setState(() {
-              imageUrl = value;
-            }));*/
-    
-    
-    //_attendancePageManager = AttendancePageManager();
-    //_attendancePageManager.initialize(); // Initialize _AttendancePageState
-    //_attendancePageManager.getAttendanceData();
-    //_attendancePage = AttendancePage(companyId: widget.companyId);
-    //final attendanceState=_attendancePage.createState();
+
     _getCurrentDate();
     listenToAttendanceChanges();
-  
-
-/*WidgetsBinding.instance!.addPostFrameCallback((_) {
-  // Accessing method or variable using the key and checking for null
-    var attendanceState = attendancePageKey.currentState!;
-    attendanceState.listenToAttendanceChanges();
-    print('hahaha');
-    attendanceDataInMainPage = attendanceState.previousAttendanceData;
-});*/
 
     print(attendanceDataInMainPage);
 
@@ -162,6 +177,8 @@ class _MainPageState extends State<MainPage> {
             onPressed: () {
               logger.i('companyID:${widget.companyId}');
               //Use navigator push to link to profile page
+              logger.i(
+                  ' MediaQuery.of(context).size.height ${(MediaQuery.of(context).size.height)}');
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -189,19 +206,19 @@ class _MainPageState extends State<MainPage> {
           nameFuture: ProfileRepository().getNameByCompanyId(widget.companyId),
           userPosition: widget.userPosition),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0), // Add bottom margin
+        padding: const EdgeInsets.only(bottom: (16.0)), // Add bottom margin
         child: Column(
           mainAxisAlignment:
               MainAxisAlignment.start, // Align the column to the bottom
           children: <Widget>[
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.05,
+              height: MediaQuery.of(context).size.height * 0.02,
             ), // Add a SizedBox with height for top margin
             Column(
               children: [
                 CircleAvatar(
-                  radius: 70,
-                  /*child: FutureBuilder<String>(
+                  radius: MediaQuery.of(context).size.height * 0.075,
+                  child: FutureBuilder<String>(
                     future: profileRepository.getUserProfileImage(widget
                         .companyId), // Replace companyId with the actual companyId
                     builder: (context, snapshot) {
@@ -218,11 +235,16 @@ class _MainPageState extends State<MainPage> {
 
                         return imageUrl.isNotEmpty
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(70),
+                                borderRadius: BorderRadius.circular(
+                                    MediaQuery.of(context).size.height * 0.075),
                                 child: Image.network(
                                   '$imageUrl',
-                                  width: 140,
-                                  height: 140,
+                                  width: MediaQuery.of(context).size.height *
+                                      0.075 *
+                                      2,
+                                  height: MediaQuery.of(context).size.height *
+                                      0.075 *
+                                      2,
                                   fit: BoxFit.cover,
                                 ),
                               )
@@ -255,7 +277,7 @@ class _MainPageState extends State<MainPage> {
                               );
                       }
                     },
-                  ),*/
+                  ),
                 ),
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.01,
@@ -263,12 +285,12 @@ class _MainPageState extends State<MainPage> {
                 Text(
                   userName,
                   style: const TextStyle(
-                    fontSize: 18.0,
+                    fontSize: 16.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.01,
+                  height: MediaQuery.of(context).size.height * 0.005,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -276,7 +298,7 @@ class _MainPageState extends State<MainPage> {
                     SizedBox(width: 5),
                     Icon(
                       Icons.credit_card,
-                      size: 20,
+                      size: MediaQuery.of(context).size.height * 0.022,
                       color: Colors.black,
                     ),
                     SizedBox(width: 5),
@@ -285,277 +307,227 @@ class _MainPageState extends State<MainPage> {
                       widget.companyId,
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 16,
+                        fontSize: MediaQuery.of(context).size.height * 0.017,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            SizedBox(
-                height: MediaQuery.of(context).size.height *
-                    0.02), // Add spacing between CircleAvatar and Text
             if (widget.userPosition != "Manager")
               Container(
-  width: double.infinity,
-  padding: EdgeInsets.all(16.0),
-  margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-  decoration: BoxDecoration(
-    color: Colors.white,
-    border: Border.all(color: Colors.grey),
-    borderRadius: BorderRadius.circular(32.0),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.5),
-        spreadRadius: 2,
-        blurRadius: 4,
-        offset: Offset(0, 4),
-      ),
-    ],
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Attendance Overview',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 18.0,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-      if (attendanceDataInMainPage != null)
-        Column(
-          children: [
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'In',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16.0,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          Container(
-              padding: EdgeInsets.symmetric(horizontal:12.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.0),
-                color: Colors.grey[200],
-              ),
-              child:Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    _formatTime(attendanceDataInMainPage!['CheckInTime']),
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24.0,
-                      fontWeight: FontWeight.normal,
+                width: double.infinity,
+                padding: EdgeInsets.all(16.0),
+                margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(32.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 4,
+                      offset: Offset(0, 4),
                     ),
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    _getPeriod(attendanceDataInMainPage!['CheckInTime']),
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.normal,
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Attendance Overview',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
-              ), 
-
-          ),
-          
-        ],
-      ),
-    ),
-    SizedBox(width: 16), 
-    // Add spacing between columns
-    Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Out',
-            style: TextStyle(
-              color: const Color.fromRGBO(229, 63, 248, 1),
-              fontSize: 16.0,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          Container(
-  padding: EdgeInsets.symmetric(horizontal:12.0),
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(16.0),
-    color: Colors.grey[200],
-  ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.start,
-    children: [
-      Text(
-        _formatTime(attendanceDataInMainPage!['CheckOutTime']),
-        style: TextStyle(
-          color: const Color.fromRGBO(229, 63, 248, 1),
-          fontSize: 24.0,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      SizedBox(width: 4),
-      Text(
-        _getPeriod(attendanceDataInMainPage!['CheckOutTime']),
-        style: TextStyle(
-          color: Colors.grey,
-          fontSize: 12.0,
-          fontWeight: FontWeight.normal,
-        ),
-      ),
-    ],
-  ),
-)
-
-        ],
-      ),
-    ),
-  ],
-),
-
-
-
-
-
-
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-          ],
-        )
-      else
-        Container(
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              Text(
-                'Get Ready to Rock!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.normal,
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                    if (attendanceDataInMainPage != null)
+                      Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'In',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize:
+                                            MediaQuery.of(context).size.height *
+                                                0.018,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.01),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        color: Colors.grey[200],
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _formatTime(
+                                                attendanceDataInMainPage![
+                                                    'CheckInTime']),
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.02,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            _getPeriod(
+                                                attendanceDataInMainPage![
+                                                    'CheckInTime']),
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.02,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              // Add spacing between columns
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Out',
+                                      style: TextStyle(
+                                        color: const Color.fromRGBO(
+                                            229, 63, 248, 1),
+                                        fontSize:
+                                            MediaQuery.of(context).size.height *
+                                                0.018,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.01),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 12.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(16.0),
+                                        color: Colors.grey[200],
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _formatTime(
+                                                attendanceDataInMainPage![
+                                                    'CheckOutTime']),
+                                            style: TextStyle(
+                                              color: const Color.fromRGBO(
+                                                  229, 63, 248, 1),
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.02,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            _getPeriod(
+                                                attendanceDataInMainPage![
+                                                    'CheckOutTime']),
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .height *
+                                                  0.02,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                              height:
+                                  MediaQuery.of(context).size.height * 0.005),
+                        ],
+                      )
+                    else
+                      Container(
+                        alignment: Alignment.center,
+                        child: Column(
+                          children: [
+                            Text(
+                              'Get Ready to Rock!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize:
+                                    MediaQuery.of(context).size.height * 0.02,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.005),
+                            Text(
+                              'You haven\'t Clock In Yet!',
+                              style: TextStyle(
+                                color: const Color.fromRGBO(229, 63, 248, 1),
+                                fontSize:
+                                    MediaQuery.of(context).size.height * 0.022,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.01),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-              Text(
-                'You haven\'t Clock In Yet!',
-                style: TextStyle(
-                  color: const Color.fromRGBO(229, 63, 248, 1),
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
-            ],
-          ),
-        ),
-    ],
-  ),
-),
-
 
             AnnouncementContainer(
               userPosition: widget.userPosition,
-              // announcements:
-              //     getCompanyAnnouncements(), // Replace with your actual function to fetch announcements
             ),
 
-            // Container(
-            //   width: double.infinity,
-            //   padding: EdgeInsets.all(16.0),
-            //   margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            //   decoration: BoxDecoration(
-            //     color: Colors.white, // Adjust the color as needed
-            //     border: Border.all(color: Colors.grey), // Border color
-            //     borderRadius:
-            //         BorderRadius.circular(32.0), // Adjust the border radius
-            //     boxShadow: [
-            //       BoxShadow(
-            //         color: Colors.grey.withOpacity(0.5), // Shadow color
-            //         spreadRadius: 2,
-            //         blurRadius: 4,
-            //         offset: Offset(0, 4), // Offset in the y-axis
-            //       ),
-            //     ],
-            //   ),
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       Text(
-            //         'Announcement',
-            //         style: TextStyle(
-            //           color: Colors.black,
-            //           fontSize: 18.0,
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       ),
-            //       SizedBox(height: 24.0), // Add vertical space
-            //       Row(
-            //         children: [
-            //           // Left side: Display Time
-            //           Text(
-            //             '12:00 PM', // Replace with the actual time or use a variable for dynamic time
-            //             style: TextStyle(
-            //               color: Colors.black,
-            //               fontSize: 16.0,
-            //               fontWeight: FontWeight.normal,
-            //             ),
-            //           ),
-            //           SizedBox(
-            //               width:
-            //                   16.0), // Add horizontal space between time and announcement
-
-            //           // Right side: Display announcement title and content
-            //           Container(
-            //             width: MediaQuery.of(context).size.width *
-            //                 0.6, // Adjust the width as needed
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 Text(
-            //                   "title",
-            //                   // announcement['title'],
-            //                   style: TextStyle(
-            //                     color: Colors.black,
-            //                     fontSize: 20.0,
-            //                     fontWeight: FontWeight.bold,
-            //                   ),
-            //                 ),
-            //                 SizedBox(height: 8.0), // Add vertical space
-            //                 Text(
-            //                   "content",
-            //                   // announcement['content'],
-            //                   style: TextStyle(
-            //                     color: const Color.fromRGBO(229, 63, 248, 1),
-            //                     fontSize: 16.0,
-            //                     fontWeight: FontWeight.normal,
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //       SizedBox(height: 16.0), // Add vertical space
-            //     ],
-            //   ),
-            // ),
-            // SizedBox(height: MediaQuery.of(context).size.height * 0.15),
             // Row of Rectangles
             Expanded(
               child: Column(
@@ -566,24 +538,26 @@ Row(
                     children: <Widget>[
                       buildRectangle(
                         context,
-                        Icon(Icons.notifications),
+                        Icon(Icons.notifications_outlined),
                         'Notification',
                         widget.companyId,
                         widget.userPosition,
+                        haveUnseenNotification,
                       ),
                       SizedBox(width: 12),
                       buildRectangle(
                         context,
-                        Icon(Icons.calendar_today),
+                        Icon(Icons.calendar_today_outlined),
                         'Leave',
                         widget.companyId,
                         widget.userPosition,
+                        havePendingLeave,
                       ),
                       SizedBox(width: 12),
                       if (userPosition != "Manager")
                         buildBiggerRectangle(
                           context,
-                          Icon(Icons.qr_code_scanner),
+                          Icon(Icons.qr_code_scanner_outlined),
                           'Attendance',
                           widget.companyId,
                           widget.userPosition,
@@ -591,7 +565,7 @@ Row(
                       if (userPosition == "Manager")
                         buildBiggerRectangle(
                           context,
-                          Icon(Icons.manage_accounts),
+                          Icon(Icons.manage_accounts_outlined),
                           'Management',
                           widget.companyId,
                           widget.userPosition,
@@ -599,18 +573,20 @@ Row(
                       SizedBox(width: 12),
                       buildRectangle(
                         context,
-                        Icon(Icons.attach_money),
+                        Icon(Icons.attach_money_outlined),
                         'Salary',
                         widget.companyId,
                         widget.userPosition,
+                        false,
                       ),
                       SizedBox(width: 12),
                       buildRectangle(
                         context,
-                        Icon(Icons.request_page),
+                        Icon(Icons.request_page_outlined),
                         'Claim',
                         widget.companyId,
                         widget.userPosition,
+                        false,
                       ),
                     ],
                   ),
@@ -625,7 +601,7 @@ Row(
 }
 
 Widget buildRectangle(BuildContext context, Icon icon, String label,
-    String companyId, String userPosition) {
+    String companyId, String userPosition, bool notification) {
   return GestureDetector(
     onTap: () {
       if (label == 'Notification') {
@@ -687,25 +663,48 @@ Widget buildRectangle(BuildContext context, Icon icon, String label,
     },
     child: Column(
       children: [
-        Container(
-          width: (MediaQuery.of(context).size.width * 0.15),
-          height: (MediaQuery.of(context).size.width * 0.15),
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Center(
-            child: Icon(
-              icon.icon,
-              size: (MediaQuery.of(context).size.width * 0.11),
+        Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              width: (MediaQuery.of(context).size.width * 0.15),
+              height: (MediaQuery.of(context).size.width * 0.15),
+              decoration: BoxDecoration(
+                color: const Color.fromRGBO(228, 164, 255, 1),
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    spreadRadius: 1,
+                    blurRadius: 2,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  icon.icon,
+                  size: (MediaQuery.of(context).size.width * 0.11),
+                ),
+              ),
             ),
-          ),
+            if (notification)
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.red,
+                ),
+              ),
+          ],
         ),
-        SizedBox(height: 8.0),
+        SizedBox(height: (MediaQuery.of(context).size.height * 0.01)),
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: (MediaQuery.of(context).size.width * 0.03),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -737,8 +736,17 @@ Widget buildBiggerRectangle(BuildContext context, Icon icon, String label,
           width: (MediaQuery.of(context).size.width * 0.15),
           height: (MediaQuery.of(context).size.width * 0.15),
           decoration: BoxDecoration(
-            color: Colors.green,
+            color: Colors.white,
+            border: Border.all(color: Colors.black),
             borderRadius: BorderRadius.circular(15.0),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                spreadRadius: 1,
+                blurRadius: 2,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Center(
             child: Icon(
@@ -747,11 +755,11 @@ Widget buildBiggerRectangle(BuildContext context, Icon icon, String label,
             ),
           ),
         ),
-        SizedBox(height: 8.0),
+        SizedBox(height: (MediaQuery.of(context).size.height * 0.01)),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: (MediaQuery.of(context).size.width * 0.03),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -765,8 +773,8 @@ String _formatTime(String? timeString) {
     List<String> timeComponents = timeString.split(':');
     if (timeComponents.length >= 2) {
       int hour = int.parse(timeComponents[0]);
-      int minute = int.parse(timeComponents[1]);
 
+      // ignore: unused_local_variable
       String period = 'AM';
       if (hour >= 12) {
         period = 'PM';
@@ -794,8 +802,6 @@ String _getPeriod(String? timeString) {
   }
   return 'AM/PM'; // Display AM if time is null or empty
 }
-
-
 
 String formatTimestamp(String timestamp) {
   // Assuming timestamp is a String in a standard format
@@ -880,10 +886,6 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               // Handle navigation to MainPage()
               Navigator.pop(context); // Close the drawer
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => MainPage(companyId: widget.companyId, )),
-              // );
             },
           ),
           ListTile(
@@ -980,10 +982,22 @@ class MyDrawer extends StatelessWidget {
             onTap: () {
               // Handle navigation to MainPage()
               Navigator.pop(context); // Close the drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SalaryPage()),
-              );
+              if (userPosition == 'Manager') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SalaryManagementPage()),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ViewSalaryPage(
+                            companyId: companyId,
+                            selectedMonth: DateTime.now(),
+                          )),
+                );
+              }
             },
           ),
           ListTile(
@@ -1005,23 +1019,24 @@ class MyDrawer extends StatelessWidget {
               );
             },
           ),
-          ListTile(
-            title: Text(
-              'User Management',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
+          if (userPosition == 'Manager')
+            ListTile(
+              title: Text(
+                'User Management',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+              leading: Icon(Icons.manage_accounts),
+              onTap: () {
+                // Handle navigation to MainPage()
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserManagementPage()),
+                );
+              },
             ),
-            leading: Icon(Icons.manage_accounts),
-            onTap: () {
-              // Handle navigation to MainPage()
-              Navigator.pop(context); // Close the drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => UserManagementPage()),
-              );
-            },
-          ),
           // Divider for visual separation
           Divider(),
           ListTile(),
@@ -1053,15 +1068,13 @@ class AnnouncementContainer extends StatelessWidget {
 
   AnnouncementContainer({Key? key, required this.userPosition})
       : super(key: key);
-  // final Future<List<Map<String, String>>> announcements; // Change the data type
 
-  // AnnouncementContainer({required this.announcements});
   @override
   Widget build(BuildContext context) {
-    double containerHeight = 200.0;
+    double containerHeight = (MediaQuery.of(context).size.height * 0.30);
     int itemshow = 3;
     if (userPosition == 'Manager') {
-      containerHeight = 400.0;
+      containerHeight = (MediaQuery.of(context).size.height * 0.40);
       itemshow = 6;
     }
     return FutureBuilder<List<Map<String, String>>>(
@@ -1110,7 +1123,7 @@ class AnnouncementContainer extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 24.0),
+                      SizedBox(height: 16.0),
                       Column(
                         children: displayedAnnouncements.map((announcement) {
                           return Row(
@@ -1149,6 +1162,7 @@ class AnnouncementContainer extends StatelessWidget {
                                         fontWeight: FontWeight.normal,
                                       ),
                                     ),
+                                    SizedBox(height: 16.0),
                                   ],
                                 ),
                               ),
@@ -1156,7 +1170,7 @@ class AnnouncementContainer extends StatelessWidget {
                           );
                         }).toList(),
                       ),
-                      SizedBox(height: 16.0),
+                      SizedBox(height: 8.0),
                     ],
                   ),
                 ),
@@ -1168,5 +1182,3 @@ class AnnouncementContainer extends StatelessWidget {
     );
   }
 }
-
-

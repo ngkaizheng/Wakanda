@@ -30,3 +30,35 @@ Future<List<Map<String, String>>> getCompanyAnnouncements() async {
     return []; // Return an empty list in case of an error
   }
 }
+
+Future<bool> hasUnreadAnnouncement(String companyId) async {
+  try {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('announcements')
+        // .where('companyId', isEqualTo: companyId)
+        .get();
+
+    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+
+      // Check if the document has "Read_by_${companyId}" field and it is false
+      if (data.containsKey('Read_by_$companyId') &&
+          data['Read_by_$companyId'] == false) {
+        return true; // Document has unread announcement
+      }
+    }
+
+    return false; // No unread announcements found
+  } catch (e) {
+    // Handle any errors that might occur during the process
+    print('Error checking announcements: $e');
+    return false;
+  }
+}
+
+// Example usage:
+void main() async {
+  String companyId = 'yourCompanyId';
+  bool hasUnread = await hasUnreadAnnouncement(companyId);
+  print('Has Unread Announcement: $hasUnread');
+}

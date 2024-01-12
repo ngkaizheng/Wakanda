@@ -25,6 +25,14 @@ class _HomePageState extends State<HomePage> {
   bool obscure = true;
   String userPosition = '';
 
+  @override
+  void initState() {
+    super.initState();
+    // Clear controllers when the widget is initialized
+    _companyIdController.clear();
+    _passwordController.clear();
+  }
+
   Future<bool> signIn(String email, String password) async {
     showDialog(
       context: context,
@@ -44,8 +52,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-    logger.i('email $email');
-    logger.i('password: $password');
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -69,22 +75,9 @@ class _HomePageState extends State<HomePage> {
       for (final doc in querySnapshot.docs) {
         final userData = doc.data() as Map<String, dynamic>;
 
-        // logger.i('companyID:$companyId');
-        // logger.i(userData['companyId']);
-        // logger.i(userData['password']);
-
-        // if (userData['companyId'] == companyId &&
-        //     userData['password'] == password) {
-        //   userPosition = userData['position'];
-        //   logger.i(userPosition);
-        //   return true; // Credentials match a user document
-        // }
-
         if (userData['companyId'] == companyId &&
             await signIn(userData['email'], password)) {
           userPosition = userData['position'];
-          logger.i(password);
-          logger.i(userPosition);
           return true; // Credentials match a user document
         }
       }
@@ -104,19 +97,11 @@ class _HomePageState extends State<HomePage> {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 10), // Adjust the height as needed
-                  Text('Loading...'),
-                ],
-              ),
-            );
+            return const CircularProgressIndicator();
           } else {
-            if (snapshot.hasData) {
-              logger.i('Snapshot $snapshot');
+            final bool isUserSignedIn = snapshot.hasData;
+
+            if (isUserSignedIn) {
               final user = snapshot.data;
               final email = user?.email;
 
@@ -124,31 +109,17 @@ class _HomePageState extends State<HomePage> {
                 future: fetchData(email),
                 builder: (context, dataSnapshot) {
                   if (dataSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 10), // Adjust the height as needed
-                          Text('Loading...'),
-                        ],
-                      ),
-                    );
+                    return const CircularProgressIndicator();
                   } else {
                     if (dataSnapshot.hasData) {
                       final companyId = dataSnapshot.data?['companyId'];
                       final userPosition = dataSnapshot.data?['userPosition'];
 
-                      logger.i('companyId: $companyId');
-                      logger.i('userPosition: $userPosition');
                       return MainPage(
                         companyId: companyId,
                         userPosition: userPosition,
-                        
                       );
                     } else {
-                      // Handle the case when data is null
-                      // You might want to show an error message or retry option
                       return buildLoginPage();
                     }
                   }
@@ -171,7 +142,6 @@ class _HomePageState extends State<HomePage> {
         final userData =
             querySnapshot.docs.first.data() as Map<String, dynamic>?;
 
-        logger.i('userData : $userData');
         if (userData != null) {
           final companyId = userData['companyId'] as String?;
           final userPosition = userData['position'] as String?;
@@ -187,14 +157,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildLoginPage() {
+    _companyIdController.clear();
+    _passwordController.clear();
     // Your existing login page UI code...
     return Center(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(20.0, 100.0, 20.0, 20.0),
+        padding: EdgeInsets.fromLTRB(20.0, 50.0, 20.0, 20.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start, // Align to the top
-          crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
-
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             // Logo
             Image.asset('assets/images/logo.png', width: 240, height: 240),
