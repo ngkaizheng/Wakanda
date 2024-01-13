@@ -584,12 +584,103 @@ class _AttendancePageState extends State<AttendancePage>
     }
   }
 
+  //UpdateLatestAttendanceTime
   Future<void> _updateUserDocumentInAttendanceCollection(
       String companyId) async {
     await _firestore
         .collection('Attendance')
         .doc(companyId)
         .set({'LatestCheckInTime': DateTime.now()}, SetOptions(merge: true));
+  }
+
+  //ErrorRevert
+  void _revertOrRemoveDocuments() async {
+    if (_recentlyCheckInDoc != null) {
+      // Remove the recently added document
+      await _recentlyCheckInDoc!.delete();
+      _recentlyCheckInDoc = null; // Reset reference after removal
+    }
+    if (_recentlyCheckOutDoc != null) {
+      // Revert the recently changed document
+      await _recentlyCheckOutDoc!.reference.set(_recentlyCheckOutDoc!.data()!);
+      _recentlyCheckOutDoc = null; // Reset reference after revert
+    }
+  }
+
+  //CheckLatestRecordStatus
+  Future<void> _checkLatestRecordStatus({required bool? expectedStatus}) async {
+    // Compare the global variable directly with the expected status
+    if (_isCheckedIn == expectedStatus) {
+      setState(() {
+        _isProcessing = false; // Reset the processing flag
+        _recentlyCheckInDoc = null;
+        _recentlyCheckOutDoc = null;
+        expectedStatus = null;
+      });
+    } else {
+      print('Latest record status does not match the expected status');
+      // Optionally add a delay before the next check
+      // await Future.delayed(Duration(seconds: 5));
+    }
+  }
+
+  //GetLatestAttendanceDoc
+  Future<DocumentReference> _getLatestAttendanceDoc() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Attendance')
+          .doc(widget.companyId)
+          .collection(_currentDate)
+          .orderBy('CheckInTime', descending: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // Return the reference to the latest attendance document
+        return querySnapshot.docs.first.reference;
+      } else {
+        // Handle if no documents are found
+        // You might want to create a new document in this case
+        print('No attendance documents found for $_currentDate');
+        // Return a reference to a new document (it can be updated by _checkInOut)
+        return FirebaseFirestore.instance
+            .collection('Attendance')
+            .doc(widget.companyId)
+            .collection(_currentDate)
+            .doc();
+      }
+    } catch (e) {
+      print('Error getting latest attendance document: $e');
+      // Return a reference to a new document as a fallback
+      return FirebaseFirestore.instance
+          .collection('Attendance')
+          .doc(widget.companyId)
+          .collection(_currentDate)
+          .doc();
+    }
+  }
+
+  //GetLatestAttendanceType
+  Future<bool> _getLastAttendanceType() async {
+  try {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('Attendance')
+        .doc(widget.companyId)
+        .collection(_currentDate)
+        .orderBy('CheckInTime', descending: true)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      var data = snapshot.docs.first.data();
+      return !(data != null &&
+          data is Map<String, dynamic> &&
+          data.containsKey('CheckOutTime'));
+    }
+  } catch (e) {
+    print("Error getting last attendance type: $e");
+  }
+  return false;
   }
 
   @override
@@ -646,113 +737,6 @@ class _AttendancePageState extends State<AttendancePage>
       _revertOrRemoveDocuments();
     }
     super.dispose();
-  }
-
-  void _revertOrRemoveDocuments() async {
-    if (_recentlyCheckInDoc != null) {
-      // Remove the recently added document
-      await _recentlyCheckInDoc!.delete();
-      _recentlyCheckInDoc = null; // Reset reference after removal
-    }
-    if (_recentlyCheckOutDoc != null) {
-      // Revert the recently changed document
-      await _recentlyCheckOutDoc!.reference.set(_recentlyCheckOutDoc!.data()!);
-      _recentlyCheckOutDoc = null; // Reset reference after revert
-    }
-  }
-
-  Future<void> _checkLatestRecordStatus({required bool? expectedStatus}) async {
-    // Compare the global variable directly with the expected status
-    if (_isCheckedIn == expectedStatus) {
-      setState(() {
-        _isProcessing = false; // Reset the processing flag
-        _recentlyCheckInDoc = null;
-        _recentlyCheckOutDoc = null;
-        expectedStatus = null;
-      });
-    } else {
-      print('Latest record status does not match the expected status');
-      // Optionally add a delay before the next check
-      // await Future.delayed(Duration(seconds: 5));
-    }
-  }
-
-  Future<DocumentReference> _getLatestAttendanceDoc() async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Attendance')
-          .doc(widget.companyId)
-          .collection(_currentDate)
-          .orderBy('CheckInTime', descending: true)
-          .limit(1)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        // Return the reference to the latest attendance document
-        return querySnapshot.docs.first.reference;
-      } else {
-        // Handle if no documents are found
-        // You might want to create a new document in this case
-        print('No attendance documents found for $_currentDate');
-        // Return a reference to a new document (it can be updated by _checkInOut)
-        return FirebaseFirestore.instance
-            .collection('Attendance')
-            .doc(widget.companyId)
-            .collection(_currentDate)
-            .doc();
-      }
-    } catch (e) {
-      print('Error getting latest attendance document: $e');
-      // Return a reference to a new document as a fallback
-      return FirebaseFirestore.instance
-          .collection('Attendance')
-          .doc(widget.companyId)
-          .collection(_currentDate)
-          .doc();
-    }
-  }
-
-  Future<bool> _getLastAttendanceType() async {
-    try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('Attendance')
-          .doc(widget.companyId)
-          .collection(_currentDate)
-          .orderBy('CheckInTime', descending: true)
-          .limit(1)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        var data = snapshot.docs.first.data();
-        return !(data != null &&
-            data is Map<String, dynamic> &&
-            data.containsKey('CheckOutTime'));
-      }
-    } catch (e) {
-      print("Error getting last attendance type: $e");
-    }
-    return false;
-  }
-
-  void _showUnavailableCheckoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Check-out Unavailable'),
-          content: Text(
-              'Check-out process is currently unavailable. Please retry after a moment.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -1069,42 +1053,6 @@ class _AttendancePageState extends State<AttendancePage>
               isLocationAvailable: _isLocationAvailable,
               loading: (_currentLocation == null || userData == null),
             ), // Your processing overlay widget00
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDarkOverlay() {
-    bool _Error = false;
-    //Timer to handle the duration of the progress indicator
-    Timer(Duration(seconds: 10), () {
-      setState() {
-        _Error = true;
-      }
-    });
-    return Container(
-      color: Colors.black.withOpacity(0.5),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 20), // Adjust the spacing as needed
-          if (_Error)
-            Text(
-              'Feature is currently unavailable.',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-          if (!_Error)
-            Text(
-              'Recording in progress...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
         ],
       ),
     );
@@ -1512,20 +1460,5 @@ class _DarkOverlayState extends State<DarkOverlay> {
         ),
       ),
     );
-  }
-}
-
-// This class acts as a public interface to access _AttendancePageState
-class AttendancePageManager {
-  late _AttendancePageState _attendancePageState;
-
-  // Method to initialize the _AttendancePageState
-  void initialize() {
-    _attendancePageState = _AttendancePageState();
-  }
-
-  // Method to retrieve data from _AttendancePageState
-  void getAttendanceData() {
-    _attendancePageState.listenToAttendanceChanges();
   }
 }

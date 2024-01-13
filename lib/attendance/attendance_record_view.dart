@@ -31,10 +31,14 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
 
   @override
   void initState() {
-    transformGeoPoints();
-    fetchDailyWorkingTime();
-    calculateLateAndOvertime();
     super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await transformGeoPoints();
+    await fetchDailyWorkingTime();
+    calculateLateAndOvertime();
   }
 
   void calculateLateAndOvertime() {
@@ -77,7 +81,11 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
       // For weekends or holidays, there's no late and total work time is considered as overtime
       late = null;
       final totalWorkHours = dailyWorkingTimeData?['totalworkingtime'] ?? 0;
+      print("totalWorkHours");
+      print("dailyWorkingTimeData${dailyWorkingTimeData?['totalworkingtime']}");
+      print(totalWorkHours);
       overtime = Duration(hours: totalWorkHours.toInt());
+      print("overtime${overtime}");
     }
   }
 
@@ -105,11 +113,13 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
           .collection('workingtime')
           .doc(widget.userDetails['companyId'])
           .collection(widget.selectedDate.year.toString())
-          .doc(widget.selectedDate.month.toString())
+          .doc(widget.selectedDate.month.toString().padLeft(2, '0')) // Format month
           .collection(widget.selectedDate.day.toString())
           .doc('dailyWorkingTime');
+          print(dailyDocRef);
 
       DocumentSnapshot dailyWorkingTimeSnapshot = await dailyDocRef.get();
+      print("Checking ${dailyWorkingTimeSnapshot}");
 
       print(dailyWorkingTimeSnapshot.exists);
 
@@ -211,13 +221,13 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                   ),
                 ),
                 gradient: LinearGradient(
-                  colors: [Color(0xFF73B9FF), Color(0xFF4D7EFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: [Color.fromARGB(255, 226, 46, 250), Color.fromARGB(255, 170, 22, 219)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Color.fromARGB(255, 164, 0, 252).withOpacity(0.3),
                     spreadRadius: 3,
                     blurRadius: 7,
                     offset: Offset(0, 4),
@@ -225,8 +235,9 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                 ],
               ),
             ),
+            //Dashboard Container
             Container(
-              width: 280,
+              width: MediaQuery.of(context).size.width * 0.6,
               height: 180,
               child: Padding(
                 padding: EdgeInsets.only(top: 7, right: 20, left: 30),
@@ -238,8 +249,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                         Container(
                           width: 24, // Adjust the width of the square
                           height: 24, // Adjust the height of the square
-                          color: Color.fromARGB(
-                              255, 84, 114, 249), // Color of the square
+                          color: Color.fromARGB(255, 187, 0, 255), // Color of the square
                           margin: EdgeInsets.only(
                               right: 1,
                               bottom: 1), // Margin between the square and text
@@ -249,7 +259,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
-                            color: Color.fromARGB(255, 100, 39, 255),
+                            color: Color.fromARGB(255, 147, 39, 255),
                             letterSpacing: 0.1,
                             height: 0.5,
                           ),
@@ -270,7 +280,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                             children: [
                               Container(
                                 height: 10,
-                                width: 280,
+                                width: MediaQuery.of(context).size.width * 0.6,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(5),
                                   gradient: LinearGradient(
@@ -287,7 +297,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                                 left: 0,
                                 child: Container(
                                   height: 10,
-                                  width: 280 * value,
+                                  width: MediaQuery.of(context).size.width * 0.6 * value,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(5),
                                     gradient: LinearGradient(
@@ -345,7 +355,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                                   builder: (context, value, child) {
                                     return Container(
                                       height: 5,
-                                      width: 280 *
+                                      width: MediaQuery.of(context).size.width * 0.3*
                                           value, // Adjust the max width as needed
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(5),
@@ -389,7 +399,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                                 ),
                                 Container(
                                   height: 5,
-                                  width: 100 *
+                                  width: MediaQuery.of(context).size.width * 0.3 *
                                       overtimePercentage, // Adjust the width of the overtime graph as needed
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(5),
@@ -413,6 +423,9 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                         ),
                       ],
                     ),
+                    SizedBox(
+                      height:7,
+                    ),
                     if (dailyWorkingTimeData != null &&
                         dailyWorkingTimeData!['totalworkingtime'] != null)
                       Align(
@@ -424,7 +437,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                               '${(dailyWorkingTimeData!['totalworkingtime'] ?? 0).toStringAsFixed(2)}',
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 50,
+                                  fontSize: 28,
                                   color: Colors.white,
                                   height: 0.77),
                             ),
@@ -489,13 +502,16 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                           ],
                           // Placeholder color or image decoration here if available in userDetails
                         ),
-                        // If an image is available, you can use it here:
-                        // child: Image.network(
-                        //   widget.userDetails['Image'],
-                        //   fit: BoxFit.cover,
-                        // ),
+                        child: widget.userDetails.containsKey('image')
+                            ? ClipOval(
+                                child: Image.network(
+                                  widget.userDetails['image'],
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Container(),
                       ),
-                      SizedBox(height: 12),
+                      SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -518,7 +534,7 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                               widget.userDetails['position'],
                               style: TextStyle(
                                 fontSize: 18,
-                                color: Colors.blue[400],
+                                color: Color.fromARGB(255, 190, 69, 255),
                                 fontWeight: FontWeight.w600,
                                 fontStyle: FontStyle.italic,
                                 fontFamily: 'Roboto',
@@ -529,13 +545,13 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                             padding: EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 16),
                             decoration: BoxDecoration(
-                              color: Colors.blue[200],
+                              color: Color.fromRGBO(224, 152, 255, 1),
                               borderRadius: BorderRadius.only(
                                 topRight: Radius.circular(30),
                                 bottomRight: Radius.circular(30),
                               ),
                               border: Border.all(
-                                color: Colors.blue[400]!,
+                                color: Color.fromARGB(255, 156, 50, 188)!,
                                 width: 1.5,
                               ),
                             ),
@@ -575,8 +591,8 @@ class _AttendanceRecordsPageState extends State<AttendanceRecordsPage> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Color(0xFF0072FF),
-                            Color(0xFF00C6A7)
+                            Color.fromARGB(255, 108, 0, 191),
+                            Color.fromARGB(255, 181, 0, 198)
                           ], // Adjust gradient colors
                         ),
                         borderRadius: BorderRadius.circular(10),
@@ -820,7 +836,7 @@ class _InteractiveCardState extends State<InteractiveCard>
                                     vertical: 12, horizontal: 20),
                                 decoration: BoxDecoration(
                                   color: widget.isSelected
-                                      ? Colors.blue
+                                      ? Color.fromARGB(255, 213, 60, 255)
                                       : Colors.deepPurple,
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20),
@@ -960,8 +976,8 @@ class _InteractiveCardState extends State<InteractiveCard>
                     gradient: LinearGradient(
                       colors: widget.isSelected
                           ? [
-                              Colors.purple.withOpacity(0.5),
-                              Colors.deepOrange.withOpacity(0.7)
+                              Colors.purple.withOpacity(0.7),
+                              Color.fromARGB(255, 255, 86, 34).withOpacity(0.3)
                             ]
                           : [
                               Colors.lightBlue.withOpacity(0.0),
@@ -974,7 +990,7 @@ class _InteractiveCardState extends State<InteractiveCard>
                     boxShadow: [
                       BoxShadow(
                         color: widget.isSelected
-                            ? Colors.purple.withOpacity(0.3)
+                            ? const Color.fromARGB(255, 188, 0, 221).withOpacity(0.3)
                             : Colors.blue.withOpacity(0.3),
                         spreadRadius: 2,
                         blurRadius: 10,
@@ -989,8 +1005,8 @@ class _InteractiveCardState extends State<InteractiveCard>
                       gradient: LinearGradient(
                         colors: widget.isSelected
                             ? [
-                                Colors.purple.withOpacity(0.5),
-                                Colors.deepOrange.withOpacity(0.7)
+                                Color.fromARGB(255, 234, 16, 190).withOpacity(0.5),
+                                Color.fromARGB(255, 255, 34, 100).withOpacity(0.7)
                               ]
                             : [
                                 Colors.lightBlue.withOpacity(0.0),
@@ -1032,7 +1048,7 @@ class _InteractiveCardState extends State<InteractiveCard>
                             child: Text(
                               'No.',
                               style: TextStyle(
-                                color: Colors.blueGrey,
+                                color: Color.fromARGB(255, 119, 8, 229),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                                 fontStyle:
