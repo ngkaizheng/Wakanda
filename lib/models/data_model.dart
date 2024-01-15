@@ -144,7 +144,7 @@ class LeaveModel {
 
       return usersWithLeave;
     } catch (e) {
-      logger.e('Error fetching users withleave: $e');
+      logger.e('Error fetching users with leave: $e');
       return [];
     }
   }
