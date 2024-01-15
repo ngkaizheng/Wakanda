@@ -17,6 +17,22 @@ class AnnouncementPage extends StatefulWidget {
 class _AnnouncementPageState extends State<AnnouncementPage> {
   String currentCategory = 'Unread';
 
+  // Function to mark all announcements as read
+  Future<void> markAllAsRead() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('announcements')
+        .where('visible_to', arrayContains: widget.companyId)
+        .get();
+
+    for (QueryDocumentSnapshot document in snapshot.docs) {
+      await FirebaseFirestore.instance
+          .collection('announcements')
+          .doc(document.id)
+          .update({'Read_by_${widget.companyId}': true});
+          print('companyID:${widget.companyId}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +75,15 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
                 },
               ),
             ),
+            // New IconButton for marking all announcements as read
+          IconButton(
+            icon: Icon(Icons.mark_email_read), // You can choose a different icon
+            onPressed: () async {
+              await markAllAsRead();
+              // Refresh the UI or perform any other necessary actions
+              setState(() {});
+            },
+          ),
         ],
       ),
       body: Column(
