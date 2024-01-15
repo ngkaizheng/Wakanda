@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_application_1/data/data_model.dart';
-import 'package:flutter_application_1/leave/checkpendingLeave.dart';
+import 'package:flutter_application_1/leave/CheckpendingLeave.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; //for getting announcement data by Lew1
 // import 'package:intl/intl.dart'; //for announcement timestamp by Lew2
 
