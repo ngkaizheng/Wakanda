@@ -14,7 +14,7 @@ import 'package:flutter_application_1/data/repositories/profile_repository.dart'
 import 'package:flutter_application_1/data/repositories/announcement_repository.dart';
 import 'package:flutter_application_1/announcement/Announcement.dart';
 import 'package:flutter_application_1/leave/Leave_main_page.dart';
-import 'package:flutter_application_1/leave/checkPendingLeave.dart';
+import 'package:flutter_application_1/leave/CheckPendingLeave.dart';
 import 'package:flutter_application_1/claim/Claim_main_page.dart';
 import 'package:flutter_application_1/claim/checkPendingClaim.dart';
 import 'package:flutter_application_1/salary/salary_management_page.dart';
