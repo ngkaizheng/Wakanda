@@ -30,6 +30,15 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
     fetchAllUsersWithPendingLeave(1);
   }
 
+  String _formatDateString(String dateString) {
+    // Ensure that the date string has leading zeros in month and day
+    final parts = dateString.split('-');
+    if (parts.length == 3) {
+      return '${parts[0]}-${parts[1].padLeft(2, '0')}-${parts[2].padLeft(2, '0')}';
+    }
+    return dateString;
+  }
+
   Future<void> fetchAllUsersWithRejectedLeave() async {
     try {
       setState(() {
@@ -44,7 +53,7 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
             final String companyId = user['userData']['companyId'].toString();
             final String name = user['userData']['name'].toString();
             final String leaveType = user['leaveType'].toString();
-            final double leaveDay = user['leaveDay'] as double;
+            final num leaveDay = user['leaveDay'] as num;
             final DateTime startDate = user['startDate'] as DateTime;
             final DateTime? endDate = user['endDate'] as DateTime?;
             final String fullORHalf = user['fullORHalf'].toString();
@@ -71,6 +80,10 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
               'documentId': documentId,
             };
           }).toList();
+          // Sort rejectedLeaveList by 'startDate'
+          userNameList.sort((a, b) =>
+              DateTime.parse(_formatDateString(b['startDate'])).compareTo(
+                  DateTime.parse(_formatDateString(a['startDate']))));
         }
         isLoading = false;
       });
@@ -94,7 +107,7 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
             final String companyId = user['userData']['companyId'].toString();
             final String name = user['userData']['name'].toString();
             final String leaveType = user['leaveType'].toString();
-            final double leaveDay = user['leaveDay'] as double;
+            final num leaveDay = user['leaveDay'] as num;
             final DateTime startDate = user['startDate'] as DateTime;
             final DateTime? endDate = user['endDate'] as DateTime?;
             final String fullORHalf = user['fullORHalf'].toString();
@@ -121,13 +134,17 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
               'documentId': documentId,
             };
           }).toList();
+          // Sort rejectedLeaveList by 'startDate'
+          userNameList.sort((a, b) =>
+              DateTime.parse(_formatDateString(b['startDate'])).compareTo(
+                  DateTime.parse(_formatDateString(a['startDate']))));
         }
         if (allUsersData.isNotEmpty) {
           userNameList = allUsersData.map((user) {
             final String companyId = user['userData']['companyId'].toString();
             final String name = user['userData']['name'].toString();
             final String leaveType = user['leaveType'].toString();
-            final double leaveDay = user['leaveDay'] as double;
+            final num leaveDay = user['leaveDay'] as num;
             final DateTime startDate = user['startDate'] as DateTime;
             final DateTime? endDate = user['endDate'] as DateTime?;
             final String fullORHalf = user['fullORHalf'].toString();
@@ -154,6 +171,10 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
               'documentId': documentId,
             };
           }).toList();
+          // Sort rejectedLeaveList by 'startDate'
+          userNameList.sort((a, b) =>
+              DateTime.parse(_formatDateString(b['startDate'])).compareTo(
+                  DateTime.parse(_formatDateString(a['startDate']))));
         }
         isLoading = false;
       });
@@ -182,7 +203,7 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
             final String companyId = user['userData']['companyId'].toString();
             final String name = user['userData']['name'].toString();
             final String leaveType = user['leaveType'].toString();
-            final double leaveDay = user['leaveDay'] as double;
+            final num leaveDay = user['leaveDay'] as num;
             final DateTime startDate = user['startDate'] as DateTime;
             final DateTime? endDate = user['endDate'] as DateTime?;
             final String fullORHalf = user['fullORHalf'].toString();
@@ -209,6 +230,10 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
               'documentId': documentId,
             };
           }).toList();
+          // Sort rejectedLeaveList by 'startDate'
+          userNameList.sort((a, b) =>
+              DateTime.parse(_formatDateString(b['startDate'])).compareTo(
+                  DateTime.parse(_formatDateString(a['startDate']))));
         }
         isLoading = false;
       });
@@ -228,7 +253,11 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
         backgroundColor: Color.fromARGB(255, 224, 45, 255),
         title: const Text(
           'Check Leave',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -239,11 +268,11 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
           onPressed: () {
             Navigator.pop(
               context,
-              MaterialPageRoute(
-                  builder: (context) => MainPage(
-                        companyId: widget.companyId,
-                        userPosition: widget.userPosition,
-                      )),
+              // MaterialPageRoute(
+              //     builder: (context) => MainPage(
+              //           companyId: widget.companyId,
+              //           userPosition: widget.userPosition,
+              //         )),
             );
           },
         ),
@@ -256,12 +285,16 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
             ToggleSwitch(
               minWidth: 150.0,
               initialLabelIndex: activeLabelIndex,
-              cornerRadius: 20.0,
+              cornerRadius: 30.0,
               activeFgColor: Colors.white,
               inactiveBgColor: Colors.white,
               inactiveFgColor: const Color.fromARGB(255, 224, 45, 255),
-              borderColor: const [Colors.grey],
-              borderWidth: 0.5,
+              borderColor: const [
+                Color.fromARGB(255, 224, 45, 255),
+                const Color.fromARGB(255, 224, 165, 235),
+                Color.fromARGB(255, 224, 45, 255)
+              ],
+              borderWidth: 1.5,
               totalSwitches: 3,
               labels: const ['Approved', 'Pending', 'Rejected'],
               customTextStyles: const [
@@ -270,9 +303,21 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
                 TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
               ],
               activeBgColors: const [
-                [Color.fromARGB(255, 224, 45, 255)],
-                [Color.fromARGB(255, 224, 45, 255)],
-                [Color.fromARGB(255, 224, 45, 255)]
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
               ],
               onToggle: (index) {
                 setState(
@@ -284,12 +329,18 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
                 fetchAllUsersWithPendingLeave(index!);
               },
             ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.01,
+            ),
             Expanded(
               child: isLoading
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color.fromRGBO(229, 63, 248, 1)),
+                        ),
                         SizedBox(height: 10), // Adjust the height as needed
                         Text('Loading...'),
                       ],
@@ -299,320 +350,397 @@ class _CheckPendingLeave extends State<CheckPendingLeave> {
                       itemCount: userNameList.length,
                       itemBuilder: (context, index) {
                         return Container(
-                          height: 170,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 8.0),
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              userNameList[index]['name'],
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 224, 45, 255),
-                                fontSize: 21.0, // or your preferred font size
-                                fontWeight: FontWeight.bold,
-                              ),
+                          margin: const EdgeInsets.only(
+                              left: 5, right: 5, top: 5, bottom: 5),
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          child: Card(
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'Leave Type:',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize:
-                                        16.0, // or your preferred font size
-                                    fontWeight: FontWeight.bold,
-                                  ), // Set label color
-                                ),
-                                Text(
-                                  '${userNameList[index]['leaveType']}',
+                            child: Container(
+                              height: 170,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 4.0, vertical: 8.0),
+                              padding: const EdgeInsets.all(4.0),
+                              child: ListTile(
+                                title: Text(
+                                  userNameList[index]['name'],
                                   style: const TextStyle(
                                     color: Color.fromARGB(255, 224, 45, 255),
                                     fontSize:
-                                        16.0, // or your preferred font size
+                                        21.0, // or your preferred font size
                                     fontWeight: FontWeight.bold,
-                                  ), // Set data color
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: MediaQuery.of(context).size.height *
-                                      0.002,
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Days:',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            '${userNameList[index]['leaveDay']}',
-                                            style: const TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 224, 45, 255),
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    const SizedBox(height: 5),
+                                    const Text(
+                                      'Leave Type:',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize:
+                                            16.0, // or your preferred font size
+                                        fontWeight: FontWeight.bold,
+                                      ), // Set label color
                                     ),
-                                    const SizedBox(width: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    Text(
+                                      '${userNameList[index]['leaveType']}',
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 224, 45, 255),
+                                        fontSize:
+                                            16.0, // or your preferred font size
+                                        fontWeight: FontWeight.bold,
+                                      ), // Set data color
+                                    ),
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.002,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Date:',
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${userNameList[index]['startDate']}',
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 224, 45, 255),
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (activeLabelIndex == 1)
-                                      Container(
-                                        margin: const EdgeInsets.fromLTRB(
-                                            60, 0, 10, 10),
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            final Map<String, dynamic> user =
-                                                userNameList[index];
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      processFullLeave(
-                                                        companyId:
-                                                            widget.companyId,
-                                                        userPosition:
-                                                            widget.userPosition,
-                                                        userNameList: [user],
-                                                      )),
-                                            );
-                                          },
-                                          style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(
-                                                    20.0), // Set the corner radius
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Days:',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16.0,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            fixedSize:
-                                                MaterialStateProperty.all<Size>(
-                                              const Size(100,
-                                                  50), // Set the width and height
+                                            Text(
+                                              '${userNameList[index]['leaveDay']}',
+                                              style: const TextStyle(
+                                                color: Color.fromARGB(
+                                                    255, 224, 45, 255),
+                                                fontSize: 16.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(
-                                              Color.fromARGB(255, 55, 142,
-                                                  242), // Set the background color to blue
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.07,
+                                        ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Date:',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                '${userNameList[index]['startDate']}',
+                                                style: const TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 224, 45, 255),
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (activeLabelIndex == 1)
+                                          Container(
+                                            margin: const EdgeInsets.fromLTRB(
+                                                10, 0, 10, 10),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                final Map<String, dynamic>
+                                                    user = userNameList[index];
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          processFullLeave(
+                                                            companyId: widget
+                                                                .companyId,
+                                                            userPosition: widget
+                                                                .userPosition,
+                                                            userNameList: [
+                                                              user
+                                                            ],
+                                                          )),
+                                                );
+                                              },
+                                              style: ButtonStyle(
+                                                shape:
+                                                    MaterialStateProperty.all<
+                                                        RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20.0), // Set the corner radius
+                                                  ),
+                                                ),
+                                                fixedSize: MaterialStateProperty
+                                                    .all<Size>(
+                                                  const Size(100,
+                                                      50), // Set the width and height
+                                                ),
+                                                backgroundColor:
+                                                    MaterialStateProperty
+                                                        .resolveWith<Color>(
+                                                  (Set<MaterialState> states) {
+                                                    if (states.contains(
+                                                        MaterialState
+                                                            .pressed)) {
+                                                      // Color when pressed
+                                                      return Color.fromRGBO(
+                                                          229,
+                                                          63,
+                                                          248,
+                                                          1); // Change this to the desired pressed color
+                                                    }
+                                                    // Color when not pressed
+                                                    return Color.fromRGBO(
+                                                        240,
+                                                        106,
+                                                        255,
+                                                        1); // Change this to the desired normal color
+                                                  },
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Check',
+                                                style: TextStyle(
+                                                  color: Colors
+                                                      .white, // Set the text color to purple
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                          child: const Text('Check'),
-                                        ),
-                                      ),
-                                    if (activeLabelIndex != 1)
-                                      Container(
-                                        margin: const EdgeInsets.fromLTRB(
-                                            60, 0, 10, 10),
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) => AlertDialog(
-                                                title: const Center(
-                                                  child: Text('Leave Details'),
-                                                ),
-                                                content: SingleChildScrollView(
-                                                  child: Column(
-                                                    children: [
-                                                      Row(
+                                        if (activeLabelIndex != 1)
+                                          Container(
+                                            margin: const EdgeInsets.fromLTRB(
+                                                10, 0, 10, 10),
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    title: const Center(
+                                                      child:
+                                                          Text('Leave Details'),
+                                                    ),
+                                                    content:
+                                                        SingleChildScrollView(
+                                                      child: Column(
                                                         children: [
-                                                          const Text(
-                                                            'Type: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Type: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['leaveType']}'),
+                                                            ],
                                                           ),
-                                                          Text(
-                                                              '${userNameList[index]['leaveType']}'),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Full/Half: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['fullORHalf']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Start Date: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['startDate']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'End Date: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['endDate']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Leave Days: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['leaveDay']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Reason: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['reason']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              const Text(
+                                                                'Remark: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                  '${userNameList[index]['remark']}'),
+                                                            ],
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                'Status: ',
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                activeLabelIndex ==
+                                                                        0
+                                                                    ? 'Approved'
+                                                                    : (activeLabelIndex ==
+                                                                            2
+                                                                        ? 'Rejected'
+                                                                        : ''),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ],
                                                       ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'Full/Half: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['fullORHalf']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'Start Date: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['startDate']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'End Date: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['endDate']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'Leave Days: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['leaveDay']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'Reason: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['reason']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          const Text(
-                                                            'Remark: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                              '${userNameList[index]['remark']}'),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            'Status: ',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            activeLabelIndex ==
-                                                                    0
-                                                                ? 'Approved'
-                                                                : (activeLabelIndex ==
-                                                                        2
-                                                                    ? 'Rejected'
-                                                                    : ''),
-                                                          ),
-                                                        ],
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text('OK'),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    child: const Text('OK'),
+                                                );
+                                              },
+                                              style: ButtonStyle(
+                                                shape:
+                                                    MaterialStateProperty.all<
+                                                        RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20.0), // Set the corner radius
                                                   ),
-                                                ],
+                                                ),
+                                                fixedSize: MaterialStateProperty
+                                                    .all<Size>(
+                                                  const Size(100,
+                                                      50), // Set the width and height
+                                                ),
+                                                backgroundColor:
+                                                    MaterialStateProperty
+                                                        .resolveWith<Color>(
+                                                  (Set<MaterialState> states) {
+                                                    if (states.contains(
+                                                        MaterialState
+                                                            .pressed)) {
+                                                      // Color when pressed
+                                                      return Color.fromRGBO(
+                                                          229,
+                                                          63,
+                                                          248,
+                                                          1); // Change this to the desired pressed color
+                                                    }
+                                                    // Color when not pressed
+                                                    return Color.fromRGBO(
+                                                        240,
+                                                        106,
+                                                        255,
+                                                        1); // Change this to the desired normal color
+                                                  },
+                                                ),
                                               ),
-                                            );
-                                          },
-                                          style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(
-                                                    20.0), // Set the corner radius
+                                              child: const Text(
+                                                'Check',
+                                                style: TextStyle(
+                                                  color: Colors
+                                                      .white, // Set the text color to purple
+                                                ),
                                               ),
-                                            ),
-                                            fixedSize:
-                                                MaterialStateProperty.all<Size>(
-                                              const Size(100,
-                                                  50), // Set the width and height
-                                            ),
-                                            backgroundColor:
-                                                MaterialStateProperty.all<
-                                                    Color>(
-                                              Color.fromARGB(255, 55, 142,
-                                                  242), // Set the background color to blue
                                             ),
                                           ),
-                                          child: const Text('Details'),
-                                        ),
-                                      ),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         );

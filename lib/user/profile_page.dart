@@ -40,7 +40,11 @@ class ProfilePage extends StatelessWidget {
           ),
           title: const Text(
             'Profile',
-            style: TextStyle(color: Colors.black), // Set title color to black
+            style: TextStyle(
+              color: Colors.black87, // Adjust text color for modern style
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           centerTitle: true,
           actions: [
@@ -65,14 +69,16 @@ class ProfilePage extends StatelessWidget {
                           onPressed: () async {
                             await FirebaseAuth.instance.signOut();
                             logger.i('Sign out');
-                            // Navigate to the login page and replace the current route
-                            Navigator.pushReplacement(
+                            // Navigate to the login page and remove all previous routes from the stack
+                            Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const HomePage()),
+                              (route) =>
+                                  false, // Remove all routes from the stack
                             );
                           },
-                          child: const Text('Logout'),
+                          child: Text('Sign Out'),
                         ),
                       ],
                     );
@@ -95,7 +101,10 @@ class ProfilePage extends StatelessWidget {
                       SizedBox(
                           height: MediaQuery.of(context).size.height *
                               0.4), // Optional spacing
-                      CircularProgressIndicator(),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Color.fromRGBO(229, 63, 248, 1)),
+                      ),
                       Text('Loading...'),
                     ],
                   ),

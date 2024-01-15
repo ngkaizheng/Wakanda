@@ -25,7 +25,7 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
         title: const Text(
           'Notification',
           style: TextStyle(
-            fontSize: 22, // Set the font size
+            fontSize: 20, // Set the font size
             fontWeight: FontWeight.bold, // Set the font weight
             color: Colors.black, // Set the font color
           ),
@@ -70,84 +70,105 @@ class _AnnouncementPageState extends State<AnnouncementPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Read and Unread button
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      currentCategory = 'Unread';
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    //Design the read the unread button
-                    minimumSize: const Size(150, 43),
-                    backgroundColor:
-                        currentCategory == 'Unread' //background color
-                            ? const Color.fromARGB(
-                                255, 224, 45, 255) // Selected color
-                            : Colors.white, // Unselected color
-                    foregroundColor: currentCategory == 'Unread' //text color
-                        ? Colors.white // Selected color
-                        : const Color.fromARGB(
-                            255, 224, 45, 255), // Unselected color
-                    shape: const RoundedRectangleBorder(
+                DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: currentCategory == 'Unread'
+                          ? LinearGradient(
+                              colors: [
+                                Color.fromARGB(255, 224, 45, 255),
+                                const Color.fromARGB(255, 224, 165, 235),
+                                Color.fromARGB(255, 224, 45, 255),
+                              ],
+                            )
+                          : null, // Set to null if not 'Unread'
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20.0), // Set rounded radius
-                        bottomLeft: Radius.circular(
-                            20.0), // Adjust the radius as needed
+                        topLeft: Radius.circular(20.0),
+                        bottomLeft: Radius.circular(20.0),
                       ),
-                      side: BorderSide(
-                        color: Color.fromARGB(
-                            255, 158, 158, 158), // Set the color of the border
-                        width: 0.5, // Set the width of the border
+                      border: Border.all(
+                        color: Color.fromARGB(255, 224, 45, 255),
+                        width: 1.0,
                       ),
                     ),
-                  ),
-                  child: const Text(
-                    'Unread', // Test display
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold // Set the font size
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(150, 43),
+                          backgroundColor: currentCategory == 'Unread'
+                              ? Colors.transparent
+                              : Colors.transparent,
+                          foregroundColor: currentCategory == 'Unread'
+                              ? Colors.white
+                              : const Color.fromARGB(255, 224, 45, 255),
+                          shadowColor: Colors.transparent,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20.0),
+                              bottomLeft: Radius.circular(20.0),
+                            ),
+                          ),
                         ),
-                  ),
-                ),
+                        onPressed: () {
+                          setState(() {
+                            currentCategory = 'Unread';
+                          });
+                        },
+                        child: const Text(
+                          'Unread',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ))),
                 const SizedBox(width: 0),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      currentCategory = 'Read';
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(150, 43),
-                    backgroundColor:
-                        currentCategory == 'Read' //background color
-                            ? const Color.fromARGB(
-                                255, 224, 45, 255) // Selected color
-                            : Colors.white, // Unselected color
-                    foregroundColor: currentCategory == 'Read' //text color
-                        ? Colors.white // Selected color
-                        : const Color.fromARGB(
-                            255, 224, 45, 255), // Unselected color
-                    shape: const RoundedRectangleBorder(
+                DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: currentCategory == 'Read'
+                          ? LinearGradient(
+                              colors: [
+                                Color.fromARGB(255, 224, 45, 255),
+                                const Color.fromARGB(255, 224, 165, 235),
+                                Color.fromARGB(255, 224, 45, 255),
+                              ],
+                            )
+                          : null, // Set to null if not 'Read'
                       borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(20.0), // Set rounded radius
-                        bottomRight: Radius.circular(
-                            20.0), // Adjust the radius as needed
+                        topRight: Radius.circular(20.0),
+                        bottomRight: Radius.circular(20.0),
                       ),
-                      side: BorderSide(
-                        color: Color.fromARGB(
-                            255, 158, 158, 158), // Set the color of the border
-                        width: 0.5, // Set the width of the border
+                      border: Border.all(
+                        color: Color.fromARGB(255, 224, 45, 255),
+                        width: 1.0,
                       ),
                     ),
-                  ),
-                  child: const Text(
-                    'Read',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold // Set the font size
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(150, 43),
+                          backgroundColor: currentCategory == 'Read'
+                              ? Colors.transparent
+                              : Colors.transparent,
+                          foregroundColor: currentCategory == 'Read'
+                              ? Colors.white
+                              : const Color.fromARGB(255, 224, 45, 255),
+                          shadowColor: Colors.transparent,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(20.0),
+                              bottomRight: Radius.circular(20.0),
+                            ),
+                          ),
                         ),
-                  ),
-                ),
+                        onPressed: () {
+                          setState(() {
+                            currentCategory = 'Read';
+                          });
+                        },
+                        child: const Text(
+                          'Read',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ))),
               ],
             ),
           ),
@@ -187,7 +208,19 @@ class AnnouncementList extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Color.fromRGBO(229, 63, 248, 1)),
+                ),
+                SizedBox(height: 10), // Adjust the height as needed
+                Text('Loading...'),
+              ],
+            ),
+          );
         }
 
         List<Widget> announcementWidgets = [];
@@ -211,88 +244,99 @@ class AnnouncementList extends StatelessWidget {
             announcementWidgets.add(
               Container(
                 margin: const EdgeInsets.only(
-                    left: 10.0,
-                    right: 10.0,
-                    bottom: 15.0), //add margin between each box
-                padding: const EdgeInsets.only(bottom: 15.0, right: 10.0),
-                decoration: BoxDecoration(
-                  //Create a box for each announcement
-                  border: Border.all(color: Colors.grey, width: 1.0),
-                  borderRadius: const BorderRadius.all(Radius.circular(20.0)),
-                ),
-                child: Stack(
-                  // Wrap the content in a Stack
-                  children: [
-                    ListTile(
-                      contentPadding: const EdgeInsets.only(
-                          top: 8.0, left: 25, right: 25, bottom: 60),
-                      title: Text(
-                        //Display date as title
-                        formattedDate,
-                        style: const TextStyle(
-                            fontSize: 16.0, fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        //Display announcement title as subtitle
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 10.0),
-                          Text(
-                            title,
+                    left: 5, right: 5, top: 5, bottom: 10),
+                padding: const EdgeInsets.only(left: 10, right: 10),
+                child: Card(
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                        top: 15.0,
+                        left: 15.0,
+                        right: 15.0,
+                        bottom: 10.0), //add margin between each box
+                    // padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
+
+                    child: Stack(
+                      // Wrap the content in a Stack
+                      children: [
+                        ListTile(
+                          contentPadding: const EdgeInsets.only(
+                              top: 8.0, left: 25, right: 25, bottom: 60),
+                          title: Text(
+                            //Display date as title
+                            formattedDate,
                             style: const TextStyle(
-                                fontSize: 15.0, color: Colors.black),
+                                fontSize: 16.0, fontWeight: FontWeight.bold),
                           ),
-                        ],
-                      ),
-                      onTap: () async {
-                        await FirebaseFirestore.instance
-                            .collection('announcements')
-                            .doc(document.id)
-                            .update({'Read_by_$companyId': true});
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AnnouncementDetailPage(
-                                title: title, content: data['content']),
+                          subtitle: Column(
+                            //Display announcement title as subtitle
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 10.0),
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                    fontSize: 15.0, color: Colors.black),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                    ),
-                    Positioned(
-                      // Positioned for the announcement type box
-                      top: (MediaQuery.of(context).size.height * 0.1),
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 0),
-                        width: 140,
-                        decoration: BoxDecoration(
-                          color: () {
-                            if (announcementType == 'Company') {
-                              return const Color.fromARGB(255, 193, 85, 254);
-                            } else if (announcementType == 'Attendance') {
-                              return const Color.fromARGB(255, 254, 85, 85);
-                            } else if (announcementType == 'Leave') {
-                              return const Color.fromARGB(255, 85, 130, 254);
-                            } else {
-                              return const Color.fromARGB(255, 112, 212, 188);
-                            }
-                          }(),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(20.0)),
+                          onTap: () async {
+                            await FirebaseFirestore.instance
+                                .collection('announcements')
+                                .doc(document.id)
+                                .update({'Read_by_$companyId': true});
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AnnouncementDetailPage(
+                                    title: title, content: data['content']),
+                              ),
+                            );
+                          },
                         ),
-                        child: Text(
-                          announcementType,
-                          style: const TextStyle(
-                            fontSize: 17.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        Positioned(
+                          // Positioned for the announcement type box
+                          top: (MediaQuery.of(context).size.height * 0.1),
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 0),
+                            width: 140,
+                            decoration: BoxDecoration(
+                              color: () {
+                                if (announcementType == 'Company') {
+                                  return const Color.fromARGB(
+                                      255, 193, 85, 254);
+                                } else if (announcementType == 'Attendance') {
+                                  return const Color.fromARGB(255, 254, 85, 85);
+                                } else if (announcementType == 'Leave') {
+                                  return const Color.fromARGB(
+                                      255, 85, 130, 254);
+                                } else {
+                                  return const Color.fromARGB(
+                                      255, 112, 212, 188);
+                                }
+                              }(),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(20.0)),
+                            ),
+                            child: Text(
+                              announcementType,
+                              style: const TextStyle(
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );
@@ -447,7 +491,7 @@ class _MakeAnnouncementPageState extends State<MakeAnnouncementPage> {
         title: const Text(
           'New Notification',
           style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold, // Set the font size
               color: Colors.black),
         ),
@@ -487,10 +531,13 @@ class _MakeAnnouncementPageState extends State<MakeAnnouncementPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 15), // Add space here
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.03,
+            ),
             Container(
               width: 400, // Set the width as per your requirement
-              height: 100, // Set the height as per your requirement
+              height: MediaQuery.of(context).size.height *
+                  0.2, // Set the height as per your requirement
               decoration: BoxDecoration(
                 color: const Color.fromARGB(255, 238, 238, 238),
                 border: Border.all(color: Colors.grey),
@@ -508,22 +555,40 @@ class _MakeAnnouncementPageState extends State<MakeAnnouncementPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 15), // Add space here
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.03,
+            ),
             ElevatedButton(
               onPressed: _postAnnouncement,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(140, 40),
-                backgroundColor: const Color.fromARGB(255, 224, 45, 255),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.0),
+              style: ButtonStyle(
+                fixedSize: MaterialStateProperty.all<Size>(
+                  const Size(150, 50), // Set the width and height
+                ),
+                backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                  (Set<MaterialState> states) {
+                    if (states.contains(MaterialState.pressed)) {
+                      // Color when pressed
+                      return Color.fromRGBO(229, 63, 248,
+                          1); // Change this to the desired pressed color
+                    }
+                    // Color when not pressed
+                    return Color.fromRGBO(240, 106, 255,
+                        1); // Change this to the desired normal color
+                  },
+                ),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(30.0), // Set the corner radius
+                  ),
                 ),
               ),
               child: const Text(
                 'Confirm',
                 style: TextStyle(
-                  fontSize: 17, // Set the font size
-                  fontWeight: FontWeight.bold, // Set the font weight
-                  color: Colors.white, // Set the font color
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ),

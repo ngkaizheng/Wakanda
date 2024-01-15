@@ -88,7 +88,11 @@ class _AddBonusPageState extends State<AddBonusPage> {
       appBar: AppBar(
         title: const Text(
           'Edit Bonus',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         elevation: 0,

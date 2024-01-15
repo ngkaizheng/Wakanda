@@ -9,9 +9,15 @@ class LeaveModel {
 
   final storage = FirebaseStorage.instance;
 
-  Future<String> uploadImage(String imagePath, String companyId) async {
+  Future<String> uploadImage(
+      String imagePath, String companyId, String imgName) async {
     try {
-      final ref = storage.ref().child('profile_images/$companyId.jpg');
+      // Append a unique identifier (timestamp) to the image name
+      String uniqueIdentifier =
+          DateTime.now().millisecondsSinceEpoch.toString();
+      String uniqueImgName = '${imgName}_$uniqueIdentifier';
+
+      final ref = storage.ref().child('claim_images/$companyId/$uniqueImgName');
       await ref.putFile(File(imagePath));
       final downloadURL = await ref.getDownloadURL();
       return downloadURL;
@@ -119,7 +125,7 @@ class LeaveModel {
               leaveData.containsKey('endDate') ? leaveData['endDate'] : null;
           final DateTime? endDate = timestamp1?.toDate();
           final String leaveType = leaveData['leaveType'] ?? '';
-          final double leaveDay = leaveData['leaveDay'] ?? '';
+          final num leaveDay = leaveData['leaveDay'] ?? '';
           final String reason = leaveData['reason'] ?? '';
           final String remark = leaveData['remark'] ?? '';
           final String fullORHalf = leaveData['fullORHalf'] ?? '';
@@ -185,7 +191,7 @@ class LeaveModel {
               leaveData.containsKey('endDate') ? leaveData['endDate'] : null;
           final DateTime? endDate = timestamp1?.toDate();
           final String leaveType = leaveData['leaveType'] ?? '';
-          final double leaveDay = leaveData['leaveDay'] ?? '';
+          final num leaveDay = leaveData['leaveDay'] ?? '';
           final String reason = leaveData['reason'] ?? '';
           final String remark = leaveData['remark'] ?? '';
           final String fullORHalf = leaveData['fullORHalf'] ?? '';
@@ -249,7 +255,7 @@ class LeaveModel {
               leaveData.containsKey('endDate') ? leaveData['endDate'] : null;
           final DateTime? endDate = timestamp1?.toDate();
           final String leaveType = leaveData['leaveType'] ?? '';
-          final double leaveDay = leaveData['leaveDay'] ?? '';
+          final num leaveDay = leaveData['leaveDay'] ?? '';
           final String reason = leaveData['reason'] ?? '';
           final String remark = leaveData['remark'] ?? '';
           final String fullORHalf = leaveData['fullORHalf'] ?? '';
@@ -312,7 +318,7 @@ class LeaveModel {
               leaveData.containsKey('endDate') ? leaveData['endDate'] : null;
           final DateTime? endDate = timestamp1?.toDate();
           final String leaveType = leaveData['leaveType'] ?? '';
-          final double leaveDay = leaveData['leaveDay'] ?? '';
+          final num leaveDay = leaveData['leaveDay'] ?? '';
           final String reason = leaveData['reason'] ?? '';
           final String remark = leaveData['remark'] ?? '';
           final String fullORHalf = leaveData['fullORHalf'] ?? '';

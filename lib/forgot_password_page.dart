@@ -62,7 +62,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Color.fromRGBO(229, 63, 248, 1)),
+                ),
                 SizedBox(height: 10), // Adjust the height as needed
                 Text('Loading...'),
               ],

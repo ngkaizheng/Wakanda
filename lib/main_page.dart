@@ -177,8 +177,7 @@ class _MainPageState extends State<MainPage> {
             onPressed: () {
               logger.i('companyID:${widget.companyId}');
               //Use navigator push to link to profile page
-              logger.i(
-                  ' MediaQuery.of(context).size.height ${(MediaQuery.of(context).size.height)}');
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -224,7 +223,20 @@ class _MainPageState extends State<MainPage> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // Show a loading indicator while fetching the image
-                        return CircularProgressIndicator();
+                        return const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color.fromRGBO(229, 63, 248, 1)),
+                              ),
+                              SizedBox(
+                                  height: 10), // Adjust the height as needed
+                              Text('Loading...'),
+                            ],
+                          ),
+                        );
                       } else if (snapshot.hasError) {
                         // Handle the error state
                         return Text('Error loading image');
@@ -841,7 +853,10 @@ class MyDrawer extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color.fromRGBO(229, 63, 248, 1)),
+                        ),
                         SizedBox(height: 10), // Adjust the height as needed
                         Text('Loading...'),
                       ],
@@ -1081,7 +1096,19 @@ class AnnouncementContainer extends StatelessWidget {
       future: getCompanyAnnouncements(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      Color.fromRGBO(229, 63, 248, 1)),
+                ),
+                SizedBox(height: 10), // Adjust the height as needed
+                Text('Loading...'),
+              ],
+            ),
+          );
         } else if (snapshot.hasError) {
           return Text('Error loading announcements');
         } else {

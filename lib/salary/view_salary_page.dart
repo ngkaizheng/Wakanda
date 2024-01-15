@@ -98,7 +98,7 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
   double holidayWorkingTime = 0.0;
   double holidayOT = 0.0;
   double lessnormalWorkingTime = 0.0;
-  double holidayCount = 0.0;
+  int holidayCount = 0;
 
   late Map<String, double> unpaidLeaveDay;
 
@@ -121,11 +121,13 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
 
   Future<void> fetchUserData() async {
     try {
+      logger.i("Start $_isUserDataFetched");
       // Check if user data has already been fetched
       if (_isUserDataFetched) {
         return;
       }
       weekdayCount = countWeekdays(_selected.year, _selected.month);
+      weekdayCount -= holidayCount;
 
       Map<String, Map<String, dynamic>> claimdata =
           await getClaimSummary(widget.companyId, _selected);
@@ -142,11 +144,11 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
 
       unpaidLeaveDay = await getLeaveDays(widget.companyId, _selected);
 
-      // Call the function to get the monthly working time
-      Map<String, Map<String, dynamic>> monthlyWorkingTime =
-          await getMonthlyWorkingTime(widget.companyId, _selected);
-
       if (_isUserDataFetched == false) {
+        // Call the function to get the monthly working time
+        Map<String, Map<String, dynamic>> monthlyWorkingTime =
+            await getMonthlyWorkingTime(widget.companyId, _selected);
+
         // Access the 'summary' key to get the calculated values
         Map<String, dynamic>? summary = monthlyWorkingTime['summary'];
 
@@ -155,7 +157,9 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
         holidayWorkingTime = summary?['holidayWorkingTime'] ?? 0.0;
         holidayOT = summary?['holidayOT'] ?? 0.0;
         lessnormalWorkingTime = summary?['lessnormalWorkingTime'] ?? 0.0;
-        holidayCount = summary?['holidayCount'] ?? 0.0;
+        holidayCount = summary?['holidayCount'] ?? 0;
+
+        logger.i('normalWorkingTime1 $normalWorkingTime');
       }
       final userData = await ProfileRepository()
           .getPreviousUserData(widget.companyId, _selected);
@@ -182,11 +186,12 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
         formattedBonusAmount = bonusAmount.toStringAsFixed(2);
 
         // Set the flag to indicate that user data has been fetched
-        _isUserDataFetched = true;
       } else {
         // Handle the case when user data is not found
         logger.e('User data not found for companyId: ${widget.companyId}');
       }
+      _isUserDataFetched = true;
+      logger.i("End $_isUserDataFetched");
     } catch (e) {
       // Handle errors during data fetching
       logger.e('Error fetching user data: $e');
@@ -562,7 +567,11 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
         ),
         title: const Text(
           'View Payroll',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         actions: [
@@ -577,11 +586,17 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
           future: fetchUserData(), // Replace with your data fetching function
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
+              return Center(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.45,
+                      // Adjust the fraction (0.1 in this case) as needed
+                    ),
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Color.fromRGBO(229, 63, 248, 1)),
+                    ),
                     SizedBox(height: 10), // Adjust the height as needed
                     Text('Loading...'),
                   ],
@@ -619,7 +634,9 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Selected date is before the joining date. Please choose again.'),
+                                  'The selected date is before you joined the company. Please choose again.',
+                                ),
+                                duration: Duration(seconds: 1),
                               ),
                             );
                             // ignore: unnecessary_null_comparison
@@ -865,8 +882,9 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
 
   num mustWorkTime() {
     num monthlyWorkingTime = weekdayCount * 8;
-    num holidayHours = holidayCount * 8;
-    num mustWorkTime = monthlyWorkingTime - holidayHours;
+    // num holidayHours = holidayCount * 8;
+    // num mustWorkTime = monthlyWorkingTime - holidayHours;
+    num mustWorkTime = monthlyWorkingTime;
     if (unpaidLeaveDay['Unpaid'] != 0.0) {
       mustWorkTime -= (unpaidLeaveDay['Unpaid']! * 8);
     }
@@ -878,7 +896,7 @@ class _ViewSalaryPageState extends State<ViewSalaryPage> {
   }
 
   num insuffientHoursFine() {
-    if (normalWorkingTime < 160) {
+    if (normalWorkingTime < mustWorkTime()) {
       return (mustWorkTime() - normalWorkingTime) *
           (basicSalary / weekdayCount / 8);
     } else {

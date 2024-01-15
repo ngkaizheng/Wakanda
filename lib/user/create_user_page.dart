@@ -189,6 +189,10 @@ class _CreateUserPageState extends State<CreateUserPage> {
         password: password.trim(),
       );
 
+      // Send email verification
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.sendEmailVerification();
+
       // Sign back in as the manager
       if (managerUser != null) {
         // Show a loading indicator
@@ -287,7 +291,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
       await ProfileRepository().createUser(
         companyId,
         {
-          'name': name,
+          'name': name.formatName(),
           'email': email,
           'ic': ic,
           'phone': phone,
@@ -346,7 +350,11 @@ class _CreateUserPageState extends State<CreateUserPage> {
         ),
         title: const Text(
           'Create User',
-          style: TextStyle(color: Colors.black), // Set title color to black
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
       ),
@@ -688,13 +696,13 @@ class _CreateUserPageState extends State<CreateUserPage> {
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(14),
+                  LengthLimitingTextInputFormatter(8),
                 ],
                 onSaved: (value) => epfNo = value ?? '',
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    if (value.length != 14) {
-                      return 'EPF number must be 14 digits long.';
+                    if (value.length != 8) {
+                      return 'EPF number must be 8 digits long.';
                     }
                   }
                   return null; // Return null if the field is optional and empty

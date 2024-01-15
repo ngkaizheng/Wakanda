@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_application_1/utils/checkholiday.dart';
 
 final logger = Logger();
 // Future<Map<String, dynamic>> getMonthlyWorkingTime(
@@ -70,6 +71,8 @@ Future<Map<String, Map<String, dynamic>>> getMonthlyWorkingTime(
     int year = selectedDate.year;
     int month = selectedDate.month;
 
+    logger.i("companyId $companyId");
+
     // Reference to the workingtime document based on companyId, year, and month
     DocumentReference monthDocRef = FirebaseFirestore.instance
         .collection('workingtime')
@@ -86,8 +89,7 @@ Future<Map<String, Map<String, dynamic>>> getMonthlyWorkingTime(
     double holidayWorkingTime = 0.0;
     double holidayOT = 0.0;
     double lessnormalWorkingTime = 0.0;
-    double holidayCount = 0.0;
-
+    int holidayCount = 0;
     // Initialize a map to store the working time data for each date
     Map<String, Map<String, dynamic>> monthlyWorkingTime = {};
 
@@ -100,10 +102,10 @@ Future<Map<String, Map<String, dynamic>>> getMonthlyWorkingTime(
       // Get the dailyWorkingTime document data
       DocumentSnapshot dailyWorkingTimeDoc = await dailyWorkingTimeDocRef.get();
 
+      logger.i("dailyWorkingTimeDoc.exists $day ${dailyWorkingTimeDoc.exists}");
       if (dailyWorkingTimeDoc.exists) {
         // Retrieve the totalworkingtime and isHoliday fields from the document
-        double totalWorkingTime =
-            dailyWorkingTimeDoc['totalworkingtime'] ?? 0.0;
+        num totalWorkingTime = dailyWorkingTimeDoc['totalworkingtime'] ?? 0.0;
         bool isHoliday = dailyWorkingTimeDoc['isHoliday'] ?? false;
 
         if (totalWorkingTime > 8.0 && !isHoliday) {
@@ -124,6 +126,8 @@ Future<Map<String, Map<String, dynamic>>> getMonthlyWorkingTime(
           holidayCount += 1;
         }
 
+        logger.i("normalWorkingTime $day $normalWorkingTime");
+
         // // Store the data in the map
         // monthlyWorkingTime[day.toString()] = {
         //   'totalWorkingTime': totalWorkingTime,
@@ -139,6 +143,23 @@ Future<Map<String, Map<String, dynamic>>> getMonthlyWorkingTime(
         };
 
         logger.i('monthlyWorkingTime $monthlyWorkingTime');
+      }
+      if (!dailyWorkingTimeDoc.exists) {
+        DateTime checkHoliday = DateTime(year, month, day);
+        logger.i(
+            "checkHoliday $checkHoliday ${await isPublicHoliday(checkHoliday)}");
+        if (await isPublicHoliday(checkHoliday)) {
+          holidayCount += 1;
+
+          monthlyWorkingTime['summary'] = {
+            'normalWorkingTime': normalWorkingTime,
+            'normalOT': normalOT,
+            'holidayWorkingTime': holidayWorkingTime,
+            'holidayOT': holidayOT,
+            'lessnormalWorkingTime': lessnormalWorkingTime,
+            'holidayCount': holidayCount
+          };
+        }
       }
     }
     logger.i('monthlyWorkingTime $monthlyWorkingTime');

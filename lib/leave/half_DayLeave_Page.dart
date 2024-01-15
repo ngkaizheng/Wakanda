@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
-import 'package:flutter_application_1/leave/Leave_main_page.dart';
 import 'package:flutter_application_1/leave/Apply_FullLeave_page.dart';
 import 'package:logger/logger.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_application_1/data/data_model.dart';
+// import 'package:flutter_application_1/leave/Leave_main_page.dart';
 
 class HalfDayLeave extends StatefulWidget {
   final String companyId;
@@ -68,8 +68,6 @@ class _HalfDayLeave extends State<HalfDayLeave> {
   }
 
   Future<void> _createLeave() async {
-    logger.i("123");
-    logger.i(widget.companyId);
     await LeaveModel().createLeave(widget.companyId, {
       'leaveType': leaveType,
       'leaveDay': leaveDay,
@@ -80,13 +78,15 @@ class _HalfDayLeave extends State<HalfDayLeave> {
       'remark': remark
     });
 
-    Navigator.pop(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LeavePage(
-                  userPosition: widget.userPosition,
-                  companyId: widget.companyId,
-                )));
+    Navigator.pop(context, true);
+
+    // Navigator.pop(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => LeavePage(
+    //               userPosition: widget.userPosition,
+    //               companyId: widget.companyId,
+    //             )));
   }
 
   @override
@@ -97,7 +97,11 @@ class _HalfDayLeave extends State<HalfDayLeave> {
         backgroundColor: Color.fromARGB(255, 224, 45, 255),
         title: const Text(
           'Leave Application',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -106,13 +110,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
             color: Colors.black,
           ),
           onPressed: () {
-            Navigator.pop(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => LeavePage(
-                          userPosition: widget.userPosition,
-                          companyId: widget.companyId,
-                        )));
+            Navigator.pop(context, true);
           },
         ),
       ),
@@ -136,19 +134,27 @@ class _HalfDayLeave extends State<HalfDayLeave> {
               ToggleSwitch(
                 minWidth: 200.0,
                 initialLabelIndex: 0,
-                cornerRadius: 20.0,
+                cornerRadius: 30.0,
                 activeFgColor: Colors.white,
                 inactiveBgColor: Colors.white,
                 inactiveFgColor: const Color.fromARGB(255, 224, 45, 255),
-                borderColor: const [Colors.grey],
-                borderWidth: 0.5,
+                borderColor: const [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                borderWidth: 1.5,
                 totalSwitches: 1, // Set to 1 for only one switch
                 labels: const ['Unpaid'], // Provide a single label
                 customTextStyles: const [
                   TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
                 ],
                 activeBgColors: const [
-                  [Color.fromARGB(255, 224, 45, 255)],
+                  [
+                    Color.fromARGB(255, 224, 45, 255),
+                    const Color.fromARGB(255, 224, 165, 235),
+                    Color.fromARGB(255, 224, 45, 255)
+                  ],
                 ],
               ),
 
@@ -167,12 +173,16 @@ class _HalfDayLeave extends State<HalfDayLeave> {
               ToggleSwitch(
                 minWidth: 150.0,
                 initialLabelIndex: 1,
-                cornerRadius: 20.0,
+                cornerRadius: 30.0,
                 activeFgColor: Colors.white,
                 inactiveBgColor: Colors.white,
                 inactiveFgColor: const Color.fromARGB(255, 224, 45, 255),
-                borderColor: const [Colors.grey],
-                borderWidth: 0.5,
+                borderColor: const [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                borderWidth: 1.5,
                 totalSwitches: 2,
                 labels: const ['Full', 'Half'],
                 customTextStyles: const [
@@ -180,8 +190,16 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                   TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
                 ],
                 activeBgColors: const [
-                  [Color.fromARGB(255, 224, 45, 255)],
-                  [Color.fromARGB(255, 224, 45, 255)]
+                  [
+                    Color.fromARGB(255, 224, 45, 255),
+                    const Color.fromARGB(255, 224, 165, 235),
+                    Color.fromARGB(255, 224, 45, 255)
+                  ],
+                  [
+                    Color.fromARGB(255, 224, 45, 255),
+                    const Color.fromARGB(255, 224, 165, 235),
+                    Color.fromARGB(255, 224, 45, 255)
+                  ],
                 ],
                 onToggle: (index) {
                   print('switched to: $index');
@@ -200,7 +218,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
 
               // Start Date
               Container(
-                margin: const EdgeInsets.fromLTRB(35, 10, 35, 5),
+                margin: const EdgeInsets.fromLTRB(35, 20, 35, 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -213,7 +231,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                       ),
                     ),
                     Container(
-                      width: 153, // Set the width as per your requirement
+                      width: 150, // Set the width as per your requirement
                       height: 45, // Set the height as per your requirement
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 238, 238, 238),
@@ -271,7 +289,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                     ),
                     Container(
                       width: 150, // Set the width as per your requirement
-                      height: 40, // Set the height as per your requirement
+                      height: 45, // Set the height as per your requirement
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(255, 238, 238, 238),
                         border: Border.all(color: Colors.grey),
@@ -301,7 +319,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
 
               Container(
                 alignment: Alignment.centerLeft,
-                margin: const EdgeInsets.fromLTRB(55, 20, 10, 20),
+                margin: const EdgeInsets.fromLTRB(55, 10, 10, 20),
                 child: const Text(
                   'Remarks',
                   style: TextStyle(
@@ -313,29 +331,32 @@ class _HalfDayLeave extends State<HalfDayLeave> {
               ),
 
               //Remark
-              Container(
-                width: 300, // Set the width as per your requirement
-                height: 100, // Set the height as per your requirement
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 238, 238, 238),
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  child: TextField(
-                    controller: _remarkController,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'remark (optimal)',
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  width: 300, // Set the width as per your requirement
+                  height: 80, // Set the height as per your requirement
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 238, 238, 238),
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      controller: _remarkController,
+                      maxLines: null, // Set to null to allow for multiple lines
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Optional Field',
+                      ),
                     ),
                   ),
                 ),
               ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.025),
 
               Container(
-                margin: const EdgeInsets.all(20.0),
                 child: ElevatedButton(
                   onPressed: () {
                     if (startDate == null || reason == null) {
@@ -361,7 +382,6 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                           ? _remarkController.text
                           : '-';
                       _createLeave();
-                      setState(() {});
                     }
                   },
                   style: ButtonStyle(
@@ -372,14 +392,21 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                       ),
                     ),
                     fixedSize: MaterialStateProperty.all<Size>(
-                      const Size(120, 40), // Set the width and height
+                      const Size(140, 40), // Set the width and height
                     ),
                     backgroundColor: MaterialStateProperty.all<Color>(
                       const Color.fromARGB(255, 224, 45,
                           255), // Set the background color to purple
                     ),
                   ),
-                  child: const Text('Confirm'),
+                  child: const Text(
+                    'Confirm',
+                    style: TextStyle(
+                      fontSize: 17, // Set the font size
+                      fontWeight: FontWeight.bold, // Set the font weight
+                      color: Colors.white, // Set the font color
+                    ),
+                  ),
                 ),
               ),
             ],

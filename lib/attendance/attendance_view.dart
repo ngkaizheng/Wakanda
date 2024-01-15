@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:flutter_application_1/attendance/attendance_record_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:swipeable_page_route/swipeable_page_route.dart';
+import 'package:provider/provider.dart';
+import 'attendance_data.dart'; // Import the AttendanceData class
 
 class AttendanceView extends StatefulWidget {
   @override
@@ -19,6 +21,7 @@ class _AttendanceViewState extends State<AttendanceView> {
   late StreamController<Map<String, Map<String, dynamic>>>
       _usersWithAttendanceController;
   // late PageController _pageController;
+  String? selectedCompanyId;
 
   Future<Map<String, Map<String, dynamic>>> getUsersWithAttendance(
       DateTime chosenDate) async {
@@ -69,12 +72,32 @@ class _AttendanceViewState extends State<AttendanceView> {
     return userSnapshot.data() as Map<String, dynamic>;
   }
 
-  Future<void> checkAttendanceAndFetchUsers() async {
-    Map<String, Map<String, dynamic>> usersAttendanceInfo =
-        await getUsersWithAttendance(_selectedDate);
-    if (!_usersWithAttendanceController.isClosed)
-      _usersWithAttendanceController.add(usersAttendanceInfo);
+Future<void> checkAttendanceAndFetchUsers() async {
+  Map<String, Map<String, dynamic>> usersAttendanceInfo =
+      await getUsersWithAttendance(_selectedDate);
+  if (!_usersWithAttendanceController.isClosed) {
+    if (selectedCompanyId != null) {
+      print("selectedCompanyId is not null: $selectedCompanyId");
+      simulateUserList(usersAttendanceInfo);
+    } else {
+      print("selectedCompanyId is null");
+    }
+    _usersWithAttendanceController.add(usersAttendanceInfo);
+    print("latestUsersAttendanceInfo: $usersAttendanceInfo");
   }
+}
+
+
+  void simulateUserList(Map<String, dynamic> rawData) {
+  //Map<String, Map<String, dynamic>> usersWithAttendance = {};
+
+  List<Map<String, dynamic>> attendanceRecords = (rawData[selectedCompanyId])['attendanceRecords'];
+  print("123attendanceRecords${attendanceRecords}");
+  
+  Provider.of<AttendanceData>(context, listen: false)
+    .updateAttendanceRecords(attendanceRecords);
+
+}
 
   @override
   void initState() {
@@ -89,7 +112,17 @@ class _AttendanceViewState extends State<AttendanceView> {
   void navigateToAttendanceRecordPage(
       BuildContext context,
       Map<String, dynamic> userDetails,
-      List<Map<String, dynamic>> attendanceRecords) {
+      List<Map<String, dynamic>> attendanceRecords,
+      String companyId
+      ) {
+      selectedCompanyId = companyId ;
+      print("selectedCompanyId${selectedCompanyId}");
+      print("PassinglatestUsersAttendanceInfo${attendanceRecords}");
+      
+      Provider.of<AttendanceData>(context, listen: false)
+        .updateAttendanceRecords(attendanceRecords);
+
+    
     Navigator.of(context).push(
       CupertinoPageRoute(
         builder: (context) => AttendanceRecordsPage(
@@ -107,6 +140,8 @@ class _AttendanceViewState extends State<AttendanceView> {
     _usersWithAttendanceController.close();
     super.dispose();
   }
+
+  
 
   void _listenToAttendanceChanges() {
     _attendanceSubscription =
@@ -153,6 +188,7 @@ class _AttendanceViewState extends State<AttendanceView> {
                   setState(() {
                     _selectedDate = pickedDate;
                   });
+                  selectedCompanyId=null;
                   await checkAttendanceAndFetchUsers();
                 }
               },
@@ -160,14 +196,14 @@ class _AttendanceViewState extends State<AttendanceView> {
                 backgroundColor:
                     MaterialStateProperty.resolveWith<Color>((states) {
                   if (states.contains(MaterialState.pressed)) {
-                    return Colors.blue.withOpacity(0.4);
+                    return Color.fromRGBO(229, 63, 248, 1);
                   }
-                  return Colors.blue; // Default button color
+                  return Color.fromRGBO(240, 106, 255, 1);// Default button color
                 }),
                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
-                    side: BorderSide(color: Colors.blueAccent, width: 2),
+                    side: BorderSide( color: Color.fromRGBO(229, 63, 248, 1), width: 2),
                   ),
                 ),
                 padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
@@ -229,7 +265,19 @@ class _AttendanceViewState extends State<AttendanceView> {
                 stream: _usersWithAttendanceController.stream,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                     return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color.fromRGBO(229, 63, 248, 1)),
+                          ),
+                          SizedBox(height: 10), // Adjust the height as needed
+                          Text('Loading...'),
+                        ],
+                      ),
+                    );
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -254,7 +302,7 @@ class _AttendanceViewState extends State<AttendanceView> {
                           return GestureDetector(
                             onTap: () {
                               navigateToAttendanceRecordPage(
-                                  context, userDetails, attendanceRecords);
+                                  context, userDetails, attendanceRecords,companyId);
                             },
                             child: Card(
                               elevation: 6,
@@ -304,7 +352,7 @@ class _AttendanceViewState extends State<AttendanceView> {
                                 },
                                 onTap: () {
                                   navigateToAttendanceRecordPage(
-                                      context, userDetails, attendanceRecords);
+                                      context, userDetails, attendanceRecords,companyId);
                                 },
                               ),
                             ),

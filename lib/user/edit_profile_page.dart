@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/user/create_user_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -87,6 +88,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String socsoNo = '';
 
   String newName = "";
+  String position = "";
 
   void updateSelectedGender(Gender? value) {
     setState(() {
@@ -118,7 +120,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           String genderFromFirestore =
               userData['gender']; // Assuming the field is stored as a String
           selectedGender =
-              genderFromFirestore == 'Male' ? Gender.male : Gender.female;
+              genderFromFirestore == 'male' ? Gender.male : Gender.female;
           selectedPosition = userData['position'] ?? '';
           pickedImagePath = userData['image'];
           dateOfBirth = userData['dateofbirth'].toDate() ?? '';
@@ -129,6 +131,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           epfNo = userData['epfNo'] ?? '';
           socsoNo = userData['socsoNo'] ?? '';
           status = userData['status'] ?? true;
+          position = userData['position'] ?? '';
 
           nameController.text = name;
           icController.text = ic;
@@ -202,7 +205,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await ProfileRepository().updateUser(
         widget.companyId,
         {
-          'name': name,
+          'name': name.formatName(),
           'email': email,
           'ic': ic,
           'phone': phone,
@@ -255,14 +258,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         title: Text(
           isEditing ? 'Edit Profile' : 'View Profile',
-          style: const TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
               isEditing
-                  ? (status ? Icons.block : Icons.check_circle)
+                  ? (status
+                      ? (position == 'Manager' ? null : Icons.block)
+                      : Icons.check_circle)
                   : Icons.edit,
               color: isEditing ? (status ? Colors.red : Colors.green) : null,
             ),
@@ -270,9 +279,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
               setState(() {
                 if (isEditing) {
                   if (status == true) {
-                    _showDeactivateDialog(context);
+                    if (position != 'Manager') _showDeactivateDialog(context);
                   } else {
-                    _showActivateDialog(context);
+                    if (position != 'Manager') _showActivateDialog(context);
                   }
                 } else {
                   isEditing = !isEditing;
@@ -570,7 +579,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             child: Text(position),
                           );
                         }).toList(),
-                        onChanged: isEditing
+                        onChanged: (widget.companyId != 'PF0000' && isEditing)
                             ? (String? value) {
                                 setState(() {
                                   selectedPosition = value;
@@ -588,128 +597,139 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ),
 
                     const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'Bank Details',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                    if (widget.companyId != 'PF0000')
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Bank Details',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
-                    ),
 
-                    // Bank Details Section
-                    TextFormField(
-                      readOnly: !isEditing,
-                      decoration: InputDecoration(labelText: 'Account Number'),
-                      controller: accountNumberController,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter account number';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => accountNumber = value ?? '',
-                    ),
-
-                    // Dropdown list for bank selection
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: DropdownButtonFormField<String>(
-                        decoration: InputDecoration(labelText: 'Bank Name'),
-                        value: selectedBank,
-                        items: banks.map((String bank) {
-                          return DropdownMenuItem<String>(
-                            value: bank,
-                            child: Text(bank),
-                          );
-                        }).toList(),
-                        onChanged: isEditing
-                            ? (String? value) {
-                                setState(() {
-                                  selectedBank = value;
-                                });
-                              }
-                            : null,
+                    if (widget.companyId != 'PF0000')
+                      // Bank Details Section
+                      TextFormField(
+                        readOnly: !isEditing,
+                        decoration:
+                            InputDecoration(labelText: 'Account Number'),
+                        controller: accountNumberController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please choose your bank';
+                            return 'Please enter account number';
                           }
                           return null;
                         },
-                        onSaved: (value) => selectedBank = value ?? '',
+                        onSaved: (value) => accountNumber = value ?? '',
                       ),
-                    ),
 
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'Financial Information',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                    if (widget.companyId != 'PF0000')
+                      // Dropdown list for bank selection
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: DropdownButtonFormField<String>(
+                          decoration: InputDecoration(labelText: 'Bank Name'),
+                          value: selectedBank,
+                          items: banks.map((String bank) {
+                            return DropdownMenuItem<String>(
+                              value: bank,
+                              child: Text(bank),
+                            );
+                          }).toList(),
+                          onChanged: isEditing
+                              ? (String? value) {
+                                  setState(() {
+                                    selectedBank = value;
+                                  });
+                                }
+                              : null,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please choose your bank';
+                            }
+                            return null;
+                          },
+                          onSaved: (value) => selectedBank = value ?? '',
                         ),
                       ),
-                    ),
 
-                    // Financial Information
-                    TextFormField(
-                      readOnly: !isEditing,
-                      decoration:
-                          InputDecoration(labelText: 'Basic Salary (RM)'),
-                      controller: basicSalaryController,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,2}$')),
-                      ],
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter basic salary';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) => basicSalary = num.parse(value ?? '0'),
-                    ),
-
-                    // EPF No
-                    TextFormField(
-                      readOnly: !isEditing,
-                      decoration:
-                          InputDecoration(labelText: 'EPF No (Optional)'),
-                      controller: epfNoController,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(14),
-                      ],
-                      onSaved: (value) => epfNo = value ?? '',
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          if (value.length != 14) {
-                            return 'EPF number must be 14 digits long.';
-                          }
-                        }
-                        return null; // Return null if the field is optional and empty
-                      },
-                    ),
-
-                    // Note for the user
-                    Text(
-                      'Note: The EPF No section can be left blank if user don\'t have one.',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey,
+                    if (widget.companyId != 'PF0000')
+                      const SizedBox(height: 20),
+                    if (widget.companyId != 'PF0000')
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'Financial Information',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 20),
+                    if (widget.companyId != 'PF0000')
+                      // Financial Information
+                      TextFormField(
+                        readOnly: !isEditing,
+                        decoration:
+                            InputDecoration(labelText: 'Basic Salary (RM)'),
+                        controller: basicSalaryController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+\.?\d{0,2}$')),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter basic salary';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) =>
+                            basicSalary = num.parse(value ?? '0'),
+                      ),
+
+                    if (widget.companyId != 'PF0000')
+                      // EPF No
+                      TextFormField(
+                        readOnly: !isEditing,
+                        decoration:
+                            InputDecoration(labelText: 'EPF No (Optional)'),
+                        controller: epfNoController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(8),
+                        ],
+                        onSaved: (value) => epfNo = value ?? '',
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty) {
+                            if (value.length != 8) {
+                              return 'EPF number must be 8 digits long.';
+                            }
+                          }
+                          return null; // Return null if the field is optional and empty
+                        },
+                      ),
+
+                    if (widget.companyId != 'PF0000')
+                      // Note for the user
+                      Text(
+                        'Note: The EPF No section can be left blank if user don\'t have one.',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
+                        ),
+                      ),
+
+                    if (widget.companyId != 'PF0000')
+                      const SizedBox(height: 20),
                     Visibility(
                       visible: isEditing,
                       child: ElevatedButton(

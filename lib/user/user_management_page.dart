@@ -19,7 +19,11 @@ class UserManagementPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'User Management',
-          style: TextStyle(color: Colors.black), // Set title color to black
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         elevation: 0, // Remove the shadow
@@ -173,7 +177,10 @@ class UserManagementPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Color.fromRGBO(229, 63, 248, 1)),
+                    ),
                     SizedBox(height: 10), // Adjust the height as needed
                     Text('Loading...'),
                   ],

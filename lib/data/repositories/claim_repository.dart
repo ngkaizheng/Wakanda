@@ -9,6 +9,8 @@ Future<Map<String, Map<String, dynamic>>> getClaimSummary(
     int year = selectedDate.year;
     int month = selectedDate.month;
 
+    logger.i("year month $year $month");
+
     CollectionReference claimCollection = FirebaseFirestore.instance
         .collection('users')
         .doc(companyId)

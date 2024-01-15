@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/leave/Leave_main_page.dart';
 import 'package:flutter_application_1/leave/half_DayLeave_Page.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_application_1/data/data_model.dart';
+import 'package:flutter_application_1/utils/checkholiday.dart';
+
+// import 'package:flutter_application_1/leave/Leave_main_page.dart';
 
 class ApplyLeave extends StatefulWidget {
   final String companyId;
@@ -155,8 +157,32 @@ class _ApplyLeave extends State<ApplyLeave> {
     return 0;
   }
 
+  // Future<double> calculateWeekdayDifference() async {
+  //   if (startDate != null && endDate != null) {
+  //     DateTime currentDay = startDate!;
+  //     double weekdayDifference = 0.0;
+
+  //     while (currentDay.isBefore(endDate!.add(Duration(days: 1)))) {
+  //       if (currentDay.weekday != DateTime.saturday &&
+  //           currentDay.weekday != DateTime.sunday) {
+  //         weekdayDifference++;
+
+  //         bool isHoliday = await isPublicHoliday(currentDay);
+
+  //         if (isHoliday) {
+  //           weekdayDifference--;
+  //         }
+  //       }
+  //       currentDay = currentDay.add(Duration(days: 1));
+  //     }
+
+  //     return weekdayDifference;
+  //   }
+
+  //   return 0;
+  // }
+
   Future<void> _createLeave() async {
-    logger.i("123");
     logger.i(widget.companyId);
     await LeaveModel().createLeave(widget.companyId, {
       'leaveType': leaveType,
@@ -169,15 +195,7 @@ class _ApplyLeave extends State<ApplyLeave> {
       'status': status
     });
 
-    // Navigate back to the profile page
-    Navigator.pop(
-      context,
-      MaterialPageRoute(
-          builder: (context) => LeavePage(
-                userPosition: widget.userPosition,
-                companyId: widget.companyId,
-              )),
-    );
+    Navigator.pop(context, true);
   }
 
   @override
@@ -212,7 +230,11 @@ class _ApplyLeave extends State<ApplyLeave> {
           backgroundColor: const Color.fromARGB(255, 224, 45, 255),
           title: const Text(
             'Leave Application',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.black87, // Adjust text color for modern style
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           centerTitle: true,
           leading: IconButton(
@@ -221,13 +243,7 @@ class _ApplyLeave extends State<ApplyLeave> {
               color: Colors.black,
             ),
             onPressed: () {
-              Navigator.pop(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => LeavePage(
-                            userPosition: widget.userPosition,
-                            companyId: widget.companyId,
-                          )));
+              Navigator.pop(context, true);
             },
           ),
         ),
@@ -251,12 +267,16 @@ class _ApplyLeave extends State<ApplyLeave> {
                 ToggleSwitch(
                   minWidth: 150.0,
                   initialLabelIndex: leaveType == 'Annual' ? 0 : 1,
-                  cornerRadius: 20.0,
+                  cornerRadius: 30.0,
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.white,
                   inactiveFgColor: const Color.fromARGB(255, 224, 45, 255),
-                  borderColor: const [Colors.grey],
-                  borderWidth: 0.5,
+                  borderColor: const [
+                    Color.fromARGB(255, 224, 45, 255),
+                    const Color.fromARGB(255, 224, 165, 235),
+                    Color.fromARGB(255, 224, 45, 255)
+                  ],
+                  borderWidth: 1.5,
                   totalSwitches: 2,
                   labels: const ['Annual', 'Unpaid'],
                   customTextStyles: const [
@@ -264,8 +284,16 @@ class _ApplyLeave extends State<ApplyLeave> {
                     TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
                   ],
                   activeBgColors: const [
-                    [Color.fromARGB(255, 224, 45, 255)],
-                    [Color.fromARGB(255, 224, 45, 255)]
+                    [
+                      Color.fromARGB(255, 224, 45, 255),
+                      const Color.fromARGB(255, 224, 165, 235),
+                      Color.fromARGB(255, 224, 45, 255)
+                    ],
+                    [
+                      Color.fromARGB(255, 224, 45, 255),
+                      const Color.fromARGB(255, 224, 165, 235),
+                      Color.fromARGB(255, 224, 45, 255)
+                    ],
                   ],
                   onToggle: (index) {
                     if (index == 0) {
@@ -293,12 +321,16 @@ class _ApplyLeave extends State<ApplyLeave> {
                 ToggleSwitch(
                   minWidth: 150.0,
                   initialLabelIndex: 0,
-                  cornerRadius: 20.0,
+                  cornerRadius: 30.0,
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.white,
                   inactiveFgColor: const Color.fromARGB(255, 224, 45, 255),
-                  borderColor: const [Colors.grey],
-                  borderWidth: 0.5,
+                  borderColor: const [
+                    Color.fromARGB(255, 224, 45, 255),
+                    const Color.fromARGB(255, 224, 165, 235),
+                    Color.fromARGB(255, 224, 45, 255)
+                  ],
+                  borderWidth: 1.5,
                   totalSwitches: 2,
                   labels: const ['Full', 'Half'],
                   customTextStyles: const [
@@ -306,8 +338,16 @@ class _ApplyLeave extends State<ApplyLeave> {
                     TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
                   ],
                   activeBgColors: const [
-                    [Color.fromARGB(255, 224, 45, 255)],
-                    [Color.fromARGB(255, 224, 45, 255)]
+                    [
+                      Color.fromARGB(255, 224, 45, 255),
+                      const Color.fromARGB(255, 224, 165, 235),
+                      Color.fromARGB(255, 224, 45, 255)
+                    ],
+                    [
+                      Color.fromARGB(255, 224, 45, 255),
+                      const Color.fromARGB(255, 224, 165, 235),
+                      Color.fromARGB(255, 224, 45, 255)
+                    ],
                   ],
                   onToggle: (index) {
                     print('switched to: $index');
@@ -341,7 +381,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                       ),
                       Container(
                         width: 150, // Set the width as per your requirement
-                        height: 40, // Set the height as per your requirement
+                        height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
                           border: Border.all(color: Colors.grey),
@@ -380,7 +420,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                         ),
                       ),
                       Container(
-                        width: 153, // Set the width as per your requirement
+                        width: 150, // Set the width as per your requirement
                         height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
@@ -436,7 +476,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                         ),
                       ),
                       Container(
-                        width: 153, // Set the width as per your requirement
+                        width: 150, // Set the width as per your requirement
                         height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
@@ -494,7 +534,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                       ),
                       Container(
                         width: 150, // Set the width as per your requirement
-                        height: 40, // Set the height as per your requirement
+                        height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
                           border: Border.all(color: Colors.grey),
@@ -527,7 +567,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                       ),
                       Container(
                         width: 150,
-                        height: 40,
+                        height: 45,
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
                           border: Border.all(color: Colors.grey),
@@ -557,7 +597,7 @@ class _ApplyLeave extends State<ApplyLeave> {
 
                 Container(
                   alignment: Alignment.centerLeft,
-                  margin: const EdgeInsets.fromLTRB(55, 20, 10, 20),
+                  margin: const EdgeInsets.fromLTRB(55, 10, 10, 20),
                   child: const Text(
                     'Remarks',
                     style: TextStyle(
@@ -568,26 +608,31 @@ class _ApplyLeave extends State<ApplyLeave> {
                   ),
                 ),
 
-                Container(
-                  width: 300, // Set the width as per your requirement
-                  height: 100, // Set the height as per your requirement
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 238, 238, 238),
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                    child: TextField(
-                      controller: _remarkController,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'remark (optimal)',
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    width: 300, // Set the width as per your requirement
+                    height: 80, // Set the height as per your requirement
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 238, 238),
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: TextField(
+                        controller: _remarkController,
+                        maxLines:
+                            null, // Set to null to allow for multiple lines
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Optional Field',
+                        ),
                       ),
                     ),
                   ),
                 ),
-
+                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
                 ElevatedButton(
                   onPressed: () {
                     if (startDate == null ||
@@ -639,7 +684,6 @@ class _ApplyLeave extends State<ApplyLeave> {
                             ? _remarkController.text
                             : '-';
                         _createLeave();
-                        setState(() {});
                       }
                     } else {
                       logger.i('success');
@@ -648,25 +692,39 @@ class _ApplyLeave extends State<ApplyLeave> {
                           ? _remarkController.text
                           : '-';
                       _createLeave();
-                      setState(() {});
                     }
                   },
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            20.0), // Set the corner radius
+                            30.0), // Set the corner radius
                       ),
                     ),
                     fixedSize: MaterialStateProperty.all<Size>(
-                      const Size(120, 40), // Set the width and height
+                      const Size(150, 50), // Set the width and height
                     ),
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                      const Color.fromARGB(255, 224, 45,
-                          255), // Set the background color to purple
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.pressed)) {
+                          // Color when pressed
+                          return Color.fromRGBO(229, 63, 248,
+                              1); // Change this to the desired pressed color
+                        }
+                        // Color when not pressed
+                        return Color.fromRGBO(240, 106, 255,
+                            1); // Change this to the desired normal color
+                      },
                     ),
                   ),
-                  child: const Text('Confirm'),
+                  child: const Text(
+                    'Confirm',
+                    style: TextStyle(
+                      fontSize: 17, // Set the font size
+                      fontWeight: FontWeight.bold, // Set the font weight
+                      color: Colors.white, // Set the font color
+                    ),
+                  ),
                 ),
               ],
             ),

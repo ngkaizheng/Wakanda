@@ -48,8 +48,11 @@ class _SalaryPageState extends State<SalaryPage> {
       final userData = doc.data() as Map<String, dynamic>;
       final position = userData['position'];
 
+      logger.i("filteredUsers $userData");
+
       if (position != "Manager") {
-        final userName = userData['name'].toString();
+        String userName = userData['name'].toString();
+        userName = userName.toLowerCase();
 
         // Check if searchTerm is null or empty, or if the userName is exactly equal to the searchTerm
         if (searchTerm == null ||
@@ -107,7 +110,11 @@ class _SalaryPageState extends State<SalaryPage> {
         ),
         title: const Text(
           'All User Salary',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
       ),
@@ -238,7 +245,10 @@ class _SalaryPageState extends State<SalaryPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color.fromRGBO(229, 63, 248, 1)),
+                        ),
                         SizedBox(height: 10), // Adjust the height as needed
                         Text('Loading...'),
                       ],
@@ -289,106 +299,114 @@ class _SalaryPageState extends State<SalaryPage> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.all(8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: <Widget>[
-            // Left side: Employee details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${userData['name']}',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: const Color.fromRGBO(229, 63, 248, 1)),
-                  ),
-                  SizedBox(height: 20), // Add space between Name and Position
-                  Text(
-                    'Basic Salary',
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                  Text(
-                    'RM ${userData['basicSalary'].toString()}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: const Color.fromRGBO(229, 63, 248, 1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Right side: Profile image
-            SizedBox(width: 16),
-            Column(
-              children: [
-                // Profile image
-                CircleAvatar(
-                  radius: 50,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.network(
-                      userData['image'] ?? '',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Handle errors, e.g., display a default icon
-                        return Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                            Text(
-                              'No Image',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+        margin: const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 5),
+        padding: const EdgeInsets.only(left: 5, right: 5),
+        child: Card(
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: <Widget>[
+                // Left side: Employee details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${userData['name']}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: const Color.fromRGBO(229, 63, 248, 1)),
+                      ),
+                      SizedBox(
+                          height: 20), // Add space between Name and Position
+                      Text(
+                        'Basic Salary',
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        'RM ${userData['basicSalary'].toString()}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: const Color.fromRGBO(229, 63, 248, 1),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 5),
-                // Identity card icon and company ID
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+
+                // Right side: Profile image
+                SizedBox(width: 16),
+                Column(
                   children: [
-                    // Identity card icon
-                    Icon(
-                      Icons.credit_card,
-                      size: 20,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(width: 5), // Add space between icon and company ID
-                    // Company ID
-                    Text(
-                      '${userData['companyId']}',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
+                    // Profile image
+                    CircleAvatar(
+                      radius: 50,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.network(
+                          userData['image'] ?? '',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Handle errors, e.g., display a default icon
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                                Text(
+                                  'No Image',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
+                    ),
+                    SizedBox(height: 5),
+                    // Identity card icon and company ID
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Identity card icon
+                        Icon(
+                          Icons.credit_card,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(
+                            width: 5), // Add space between icon and company ID
+                        // Company ID
+                        Text(
+                          '${userData['companyId']}',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

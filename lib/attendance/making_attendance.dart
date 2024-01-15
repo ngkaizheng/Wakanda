@@ -248,7 +248,7 @@ class _AttendancePageState extends State<AttendancePage>
   Future<void> _getCurrentTime() async {
     // Method to fetch the current time
     DateTime now = DateTime.now();
-    String formattedTime = DateFormat('hh:mm:ss').format(now);
+    String formattedTime = DateFormat('HH:mm:ss').format(now);
     setState(() {
       _currentTime = formattedTime;
     });
@@ -261,7 +261,7 @@ class _AttendancePageState extends State<AttendancePage>
       DateTime now = DateTime.now();
       setState(() {
         _currentDate = '${now.day}-${now.month}-${now.year}';
-        _currentTime = DateFormat('hh:mm:ss').format(now);
+        _currentTime = DateFormat('HH:mm:ss').format(now);
       });
     });
   }
@@ -473,6 +473,8 @@ class _AttendancePageState extends State<AttendancePage>
           'CheckOutTime': _currentTime,
         });
 
+        await _updateUserDocumentOutAttendanceCollection(widget.companyId);
+
         latestAttendanceDoc = await _getLatestAttendanceDoc();
 
         // Post check-in success announcement
@@ -593,7 +595,72 @@ class _AttendancePageState extends State<AttendancePage>
         .set({'LatestCheckInTime': DateTime.now()}, SetOptions(merge: true));
   }
 
+    //UpdateLatestAttendanceTime
+  Future<void> _updateUserDocumentOutAttendanceCollection(
+      String companyId) async {
+    await _firestore
+        .collection('Attendance')
+        .doc(companyId)
+        .set({'LatestCheckOutTime': DateTime.now()}, SetOptions(merge: true));
+  }
+
   //ErrorRevert
+
+    @override
+  void initState() {
+    super.initState();
+    attendancePageKey = GlobalKey<_AttendancePageState>();
+
+    //Current
+    _getCurrentDate();
+    _getCurrentTime();
+    //Animation
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        curve: Curves.easeInOut,
+        parent: _slideController,
+      ),
+    );
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = AlwaysStoppedAnimation<double>(1);
+    // Start the animations
+    _slideController.forward();
+    _fadeController.forward();
+    _updateDateTime(); // Fetch and start updating date/time
+    _requestLocationPermission(); //LocationPermission
+    listenToAttendanceChanges();
+    //Personal
+    _fetchUserData();
+    checkGPSStatus();
+  }
+
+  @override
+  void dispose() {
+    // Stop listening to position updates when the widget is disposed
+    // This prevents calling setState() on a disposed widget
+    Geolocator.getPositionStream().listen((Position position) {}).cancel();
+    _stopListenerRefresh(); // Stop the timer when the widget is disposed
+    _attendanceStream?.cancel(); // Cancel the stream subscription;
+    _validateTimer?.cancel();
+    _stopDateTimeUpdates(); // Stop the timer when the widget is disposed
+    _slideController.dispose();
+    _fadeController.dispose();
+    // Revert database changes if the process is still ongoing when the user exits the page
+    if (_isProcessing) {
+      _revertOrRemoveDocuments();
+    }
+    super.dispose();
+  }
   void _revertOrRemoveDocuments() async {
     if (_recentlyCheckInDoc != null) {
       // Remove the recently added document
@@ -662,82 +729,28 @@ class _AttendancePageState extends State<AttendancePage>
 
   //GetLatestAttendanceType
   Future<bool> _getLastAttendanceType() async {
-  try {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('Attendance')
-        .doc(widget.companyId)
-        .collection(_currentDate)
-        .orderBy('CheckInTime', descending: true)
-        .limit(1)
-        .get();
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Attendance')
+          .doc(widget.companyId)
+          .collection(_currentDate)
+          .orderBy('CheckInTime', descending: true)
+          .limit(1)
+          .get();
 
-    if (snapshot.docs.isNotEmpty) {
-      var data = snapshot.docs.first.data();
-      return !(data != null &&
-          data is Map<String, dynamic> &&
-          data.containsKey('CheckOutTime'));
+      if (snapshot.docs.isNotEmpty) {
+        var data = snapshot.docs.first.data();
+        return !(data != null &&
+            data is Map<String, dynamic> &&
+            data.containsKey('CheckOutTime'));
+      }
+    } catch (e) {
+      print("Error getting last attendance type: $e");
     }
-  } catch (e) {
-    print("Error getting last attendance type: $e");
-  }
-  return false;
+    return false;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    attendancePageKey = GlobalKey<_AttendancePageState>();
 
-    //Current
-    _getCurrentDate();
-    _getCurrentTime();
-    //Animation
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        curve: Curves.easeInOut,
-        parent: _slideController,
-      ),
-    );
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeAnimation = AlwaysStoppedAnimation<double>(1);
-    // Start the animations
-    _slideController.forward();
-    _fadeController.forward();
-    _updateDateTime(); // Fetch and start updating date/time
-    _requestLocationPermission(); //LocationPermission
-    listenToAttendanceChanges();
-    //Personal
-    _fetchUserData();
-    checkGPSStatus();
-  }
-
-  @override
-  void dispose() {
-    // Stop listening to position updates when the widget is disposed
-    // This prevents calling setState() on a disposed widget
-    Geolocator.getPositionStream().listen((Position position) {}).cancel();
-    _stopListenerRefresh(); // Stop the timer when the widget is disposed
-    _attendanceStream?.cancel(); // Cancel the stream subscription;
-    _validateTimer?.cancel();
-    _stopDateTimeUpdates(); // Stop the timer when the widget is disposed
-    _slideController.dispose();
-    _fadeController.dispose();
-    // Revert database changes if the process is still ongoing when the user exits the page
-    if (_isProcessing) {
-      _revertOrRemoveDocuments();
-    }
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -906,7 +919,21 @@ class _AttendancePageState extends State<AttendancePage>
                                   }
                                 : {},
                           )
-                        : Center(child: CircularProgressIndicator()),
+                        // this is for Google Map
+                        : const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color.fromRGBO(229, 63, 248, 1)),
+                                ),
+                                SizedBox(
+                                    height: 10), // Adjust the height as needed
+                                Text('Loading...'),
+                              ],
+                            ),
+                          ),
                   ),
                   SizedBox(height: 20),
                   Row(
@@ -965,7 +992,21 @@ class _AttendancePageState extends State<AttendancePage>
                   SizedBox(height: 10),
                   userData != null
                       ? _buildEmployeeRectangle(context)
-                      : CircularProgressIndicator(),
+                      //This is for user information & Record
+                      : const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color.fromRGBO(229, 63, 248, 1)),
+                              ),
+                              SizedBox(
+                                  height: 10), // Adjust the height as needed
+                              Text('Loading...'),
+                            ],
+                          ),
+                        ),
                   SizedBox(height: 20),
                   // Add other widgets and components as needed
                 ], //Column Children

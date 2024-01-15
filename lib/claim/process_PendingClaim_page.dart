@@ -112,7 +112,7 @@ class _processClaim extends State<processClaim> {
         .updateClaimStatusAndBalance(companyId, documentId, status);
 
     // ignore: use_build_context_synchronously
-    Navigator.push(
+    Navigator.pop(
       context,
       MaterialPageRoute(
           builder: (context) => CheckPendingClaim(
@@ -130,7 +130,11 @@ class _processClaim extends State<processClaim> {
           backgroundColor: const Color.fromARGB(255, 224, 45, 255),
           title: Text(
             '$name',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.black87, // Adjust text color for modern style
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           centerTitle: true,
           leading: IconButton(
@@ -168,7 +172,13 @@ class _processClaim extends State<processClaim> {
                   padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.0),
-                    color: const Color.fromARGB(255, 224, 45, 255),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 224, 45, 255),
+                        const Color.fromARGB(255, 224, 165, 235),
+                        Color.fromARGB(255, 224, 45, 255),
+                      ],
+                    ),
                   ),
                   child: Center(
                     child: Text(
@@ -184,7 +194,7 @@ class _processClaim extends State<processClaim> {
 
                 // claim Date
                 Container(
-                  margin: const EdgeInsets.fromLTRB(35, 10, 35, 5),
+                  margin: const EdgeInsets.fromLTRB(35, 20, 35, 5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -218,7 +228,7 @@ class _processClaim extends State<processClaim> {
                   ),
                 ),
 
-                // Leave Days
+                // Amount Claim
                 Container(
                   margin: const EdgeInsets.fromLTRB(35, 10, 35, 5),
                   child: Row(
@@ -268,22 +278,29 @@ class _processClaim extends State<processClaim> {
                   ),
                 ),
 
-                Container(
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
                     width: 300,
                     height: 80,
-                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 238, 238, 238),
                       border: Border.all(color: Colors.grey),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    child: Text(
-                      remark,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black,
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Text(
+                        remark,
+                        style: TextStyle(
+                          fontSize: 15.0,
+                          color: Colors.black,
+                        ),
                       ),
-                    )),
+                    ),
+                  ),
+                ),
 
                 const SizedBox(height: 20),
                 //upload Picture
@@ -338,13 +355,20 @@ class _processClaim extends State<processClaim> {
                             ),
                           ),
                           fixedSize: MaterialStateProperty.all<Size>(
-                            const Size(110, 40), // Set the width and height
+                            const Size(130, 40), // Set the width and height
                           ),
                           backgroundColor: MaterialStateProperty.all<Color>(
                             Color.fromARGB(255, 48, 197, 53),
                           ),
                         ),
-                        child: const Text('Approve'),
+                        child: const Text(
+                          'Approve',
+                          style: TextStyle(
+                            fontSize: 17, // Set the font size
+                            fontWeight: FontWeight.bold, // Set the font weight
+                            color: Colors.white, // Set the font color
+                          ),
+                        ),
                       ),
 
                       const SizedBox(width: 30),
@@ -369,14 +393,21 @@ class _processClaim extends State<processClaim> {
                             ),
                           ),
                           fixedSize: MaterialStateProperty.all<Size>(
-                            const Size(100, 40), // Set the width and height
+                            const Size(130, 40), // Set the width and height
                           ),
                           backgroundColor: MaterialStateProperty.all<Color>(
                             Color.fromARGB(255, 244, 82,
                                 70), // Set the background color to blue
                           ),
                         ),
-                        child: const Text('Reject'),
+                        child: const Text(
+                          'Reject',
+                          style: TextStyle(
+                            fontSize: 17, // Set the font size
+                            fontWeight: FontWeight.bold, // Set the font weight
+                            color: Colors.white, // Set the font color
+                          ),
+                        ),
                       ),
                     ],
                   ),

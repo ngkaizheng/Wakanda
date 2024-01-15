@@ -89,7 +89,11 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
         backgroundColor: Color.fromARGB(255, 224, 45, 255),
         title: const Text(
           'Check Claim',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -117,12 +121,16 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
             ToggleSwitch(
               minWidth: 150.0,
               initialLabelIndex: activeLabelIndex,
-              cornerRadius: 20.0,
+              cornerRadius: 30.0,
               activeFgColor: Colors.white,
               inactiveBgColor: Colors.white,
               inactiveFgColor: Color.fromARGB(255, 224, 45, 255),
-              borderColor: [Colors.grey],
-              borderWidth: 0.5,
+              borderColor: const [
+                Color.fromARGB(255, 224, 45, 255),
+                const Color.fromARGB(255, 224, 165, 235),
+                Color.fromARGB(255, 224, 45, 255)
+              ],
+              borderWidth: 1.5,
               totalSwitches: 3,
               labels: ['Approved', 'Pending', 'Rejected'],
               customTextStyles: [
@@ -132,9 +140,21 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
               ],
               changeOnTap: true,
               activeBgColors: [
-                [Color.fromARGB(255, 224, 45, 255)],
-                [Color.fromARGB(255, 224, 45, 255)],
-                [Color.fromARGB(255, 224, 45, 255)]
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
+                [
+                  Color.fromARGB(255, 224, 45, 255),
+                  const Color.fromARGB(255, 224, 165, 235),
+                  Color.fromARGB(255, 224, 45, 255)
+                ],
               ],
               onToggle: (index) {
                 setState(
@@ -146,12 +166,18 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
                 fetchAllUsersWithClaimHistory(index!);
               },
             ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.01,
+            ),
             Expanded(
               child: isLoading
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color.fromRGBO(229, 63, 248, 1)),
+                        ),
                         SizedBox(height: 10), // Adjust the height as needed
                         Text('Loading...'),
                       ],
@@ -161,259 +187,308 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
                       itemCount: userNameList.length,
                       itemBuilder: (context, index) {
                         return Container(
-                          height: 170,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 8.0),
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(20.0),
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              userNameList[index]['name'],
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 224, 45, 255),
-                                fontSize: 21.0, // or your preferred font size
-                                fontWeight: FontWeight.bold,
-                              ),
+                          margin: const EdgeInsets.only(
+                              left: 5, right: 5, top: 5, bottom: 5),
+                          padding: const EdgeInsets.only(left: 5, right: 5),
+                          child: Card(
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 5),
-                                const Text(
-                                  'Claim Type:',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize:
-                                        16.0, // or your preferred font size
-                                    fontWeight: FontWeight.bold,
-                                  ), // Set label color
-                                ),
-                                Text(
-                                  '${userNameList[index]['claimType']}',
+                            child: Container(
+                              height: 170,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 4.0, vertical: 8.0),
+                              padding: const EdgeInsets.all(4.0),
+                              child: ListTile(
+                                title: Text(
+                                  userNameList[index]['name'],
                                   style: const TextStyle(
                                     color: Color.fromARGB(255, 224, 45, 255),
                                     fontSize:
-                                        16.0, // or your preferred font size
+                                        21.0, // or your preferred font size
                                     fontWeight: FontWeight.bold,
-                                  ), // Set data color
+                                  ),
                                 ),
-                                SizedBox(
-                                  height: MediaQuery.of(context).size.height *
-                                      0.002,
-                                ),
-                                Container(
-                                  width: double.infinity,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Amount:',
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              '${userNameList[index]['claimAmount'].toStringAsFixed(2)}',
-                                              style: const TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 224, 45, 255),
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 5),
+                                    const Text(
+                                      'Claim Type:',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize:
+                                            16.0, // or your preferred font size
+                                        fontWeight: FontWeight.bold,
+                                      ), // Set label color
+                                    ),
+                                    Text(
+                                      '${userNameList[index]['claimType']}',
+                                      style: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 224, 45, 255),
+                                        fontSize:
+                                            16.0, // or your preferred font size
+                                        fontWeight: FontWeight.bold,
+                                      ), // Set data color
+                                    ),
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.002,
+                                    ),
+                                    Container(
+                                      width: double.infinity,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text(
-                                            'Date:',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            '${userNameList[index]['claimDate']}',
-                                            style: const TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 224, 45, 255),
-                                              fontSize: 16.0,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (activeLabelIndex == 1)
-                                        Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              30, 0, 10, 10),
-                                          child: ElevatedButton(
-                                            onPressed: () {
-                                              final Map<String, dynamic> user =
-                                                  userNameList[index];
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        processClaim(
-                                                          companyId:
-                                                              widget.companyId,
-                                                          userPosition: widget
-                                                              .userPosition,
-                                                          userNameList: [user],
-                                                        )),
-                                              );
-                                            },
-                                            style: ButtonStyle(
-                                              shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0), // Set the corner radius
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Amount:',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              fixedSize: MaterialStateProperty
-                                                  .all<Size>(
-                                                const Size(100,
-                                                    50), // Set the width and height
+                                              Text(
+                                                '${userNameList[index]['claimAmount'].toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 224, 45, 255),
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                              backgroundColor:
-                                                  MaterialStateProperty.all<
-                                                      Color>(
-                                                Color.fromARGB(255, 55, 142,
-                                                    242), // Set the background color to blue
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.04,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Date:',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 16.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${userNameList[index]['claimDate']}',
+                                                  style: const TextStyle(
+                                                    color: Color.fromARGB(
+                                                        255, 224, 45, 255),
+                                                    fontSize: 16.0,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          if (activeLabelIndex == 1)
+                                            Container(
+                                              margin: const EdgeInsets.fromLTRB(
+                                                  10, 0, 10, 10),
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  final Map<String, dynamic>
+                                                      user =
+                                                      userNameList[index];
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            processClaim(
+                                                              companyId: widget
+                                                                  .companyId,
+                                                              userPosition: widget
+                                                                  .userPosition,
+                                                              userNameList: [
+                                                                user
+                                                              ],
+                                                            )),
+                                                  );
+                                                },
+                                                style: ButtonStyle(
+                                                  shape:
+                                                      MaterialStateProperty.all<
+                                                          RoundedRectangleBorder>(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20.0), // Set the corner radius
+                                                    ),
+                                                  ),
+                                                  fixedSize:
+                                                      MaterialStateProperty.all<
+                                                          Size>(
+                                                    const Size(100,
+                                                        50), // Set the width and height
+                                                  ),
+                                                  backgroundColor:
+                                                      MaterialStateProperty
+                                                          .resolveWith<Color>(
+                                                    (Set<MaterialState>
+                                                        states) {
+                                                      if (states.contains(
+                                                          MaterialState
+                                                              .pressed)) {
+                                                        // Color when pressed
+                                                        return Color.fromRGBO(
+                                                            229,
+                                                            63,
+                                                            248,
+                                                            1); // Change this to the desired pressed color
+                                                      }
+                                                      // Color when not pressed
+                                                      return Color.fromRGBO(
+                                                          240,
+                                                          106,
+                                                          255,
+                                                          1); // Change this to the desired normal color
+                                                    },
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  'Check',
+                                                  style: TextStyle(
+                                                    color: Colors
+                                                        .white, // Set the text color to purple
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                            child: const Text('Check'),
-                                          ),
-                                        ),
-                                      if (activeLabelIndex != 1)
-                                        Container(
-                                          margin: const EdgeInsets.fromLTRB(
-                                              30, 0, 10, 10),
-                                          child: ElevatedButton(
-                                            onPressed: () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    AlertDialog(
-                                                  title: const Center(
-                                                    child:
-                                                        Text('Claim Details'),
-                                                  ),
-                                                  content:
-                                                      SingleChildScrollView(
-                                                    child: Column(
-                                                      children: [
-                                                        Row(
+                                          if (activeLabelIndex != 1)
+                                            Container(
+                                              margin: const EdgeInsets.fromLTRB(
+                                                  30, 0, 10, 10),
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) =>
+                                                        AlertDialog(
+                                                      title: const Center(
+                                                        child: Text(
+                                                            'Claim Details'),
+                                                      ),
+                                                      content:
+                                                          SingleChildScrollView(
+                                                        child: Column(
                                                           children: [
-                                                            const Text(
-                                                              'Type: ',
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
+                                                            Row(
+                                                              children: [
+                                                                const Text(
+                                                                  'Type: ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                    '${userNameList[index]['claimType']}'),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                const Text(
+                                                                  'Date: ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                    '${userNameList[index]['claimDate']}'),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                const Text(
+                                                                  'Amount(RM): ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                    '${userNameList[index]['claimAmount']}'),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                const Text(
+                                                                  'Remark: ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                    '${userNameList[index]['remark']}'),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  'Status: ',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  activeLabelIndex ==
+                                                                          0
+                                                                      ? 'Approved'
+                                                                      : (activeLabelIndex ==
+                                                                              2
+                                                                          ? 'Rejected'
+                                                                          : ''),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Container(
+                                                              height: 350,
+                                                              width: 400,
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .white,
+                                                                border:
+                                                                    Border.all(
+                                                                  color: Colors
+                                                                      .lightGreen,
+                                                                  width: 2.0,
+                                                                ),
                                                               ),
-                                                            ),
-                                                            Text(
-                                                                '${userNameList[index]['claimType']}'),
-                                                          ],
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            const Text(
-                                                              'Date: ',
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                                '${userNameList[index]['claimDate']}'),
-                                                          ],
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            const Text(
-                                                              'Amount(RM): ',
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                                '${userNameList[index]['claimAmount']}'),
-                                                          ],
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            const Text(
-                                                              'Remark: ',
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                                '${userNameList[index]['remark']}'),
-                                                          ],
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              'Status: ',
-                                                              style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            Text(
-                                                              activeLabelIndex ==
-                                                                      0
-                                                                  ? 'Approved'
-                                                                  : (activeLabelIndex ==
-                                                                          2
-                                                                      ? 'Rejected'
-                                                                      : ''),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Container(
-                                                          height: 350,
-                                                          width: 400,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            border: Border.all(
-                                                              color: Colors
-                                                                  .lightGreen,
-                                                              width: 2.0,
-                                                            ),
-                                                          ),
-                                                          alignment:
-                                                              Alignment.center,
-                                                          child:
-                                                              '${userNameList[index]['imageURL']}'
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              child: '${userNameList[index]['imageURL']}'
                                                                       .isNotEmpty
                                                                   ? Image
                                                                       .network(
@@ -431,49 +506,78 @@ class _CheckPendingClaim extends State<CheckPendingClaim> {
                                                                           fontSize:
                                                                               20),
                                                                     ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                          child:
+                                                              const Text('OK'),
                                                         ),
                                                       ],
                                                     ),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child: const Text('OK'),
+                                                  );
+                                                },
+                                                style: ButtonStyle(
+                                                  shape:
+                                                      MaterialStateProperty.all<
+                                                          RoundedRectangleBorder>(
+                                                    RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              20.0), // Set the corner radius
                                                     ),
-                                                  ],
+                                                  ),
+                                                  fixedSize:
+                                                      MaterialStateProperty.all<
+                                                          Size>(
+                                                    const Size(100,
+                                                        50), // Set the width and height
+                                                  ),
+                                                  backgroundColor:
+                                                      MaterialStateProperty
+                                                          .resolveWith<Color>(
+                                                    (Set<MaterialState>
+                                                        states) {
+                                                      if (states.contains(
+                                                          MaterialState
+                                                              .pressed)) {
+                                                        // Color when pressed
+                                                        return Color.fromRGBO(
+                                                            229,
+                                                            63,
+                                                            248,
+                                                            1); // Change this to the desired pressed color
+                                                      }
+                                                      // Color when not pressed
+                                                      return Color.fromRGBO(
+                                                          240,
+                                                          106,
+                                                          255,
+                                                          1); // Change this to the desired normal color
+                                                    },
+                                                  ),
                                                 ),
-                                              );
-                                            },
-                                            style: ButtonStyle(
-                                              shape: MaterialStateProperty.all<
-                                                  RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20.0), // Set the corner radius
+                                                child: const Text(
+                                                  'Details',
+                                                  style: TextStyle(
+                                                    color: Colors
+                                                        .white, // Set the text color to purple
+                                                  ),
                                                 ),
-                                              ),
-                                              fixedSize: MaterialStateProperty
-                                                  .all<Size>(
-                                                const Size(100,
-                                                    50), // Set the width and height
-                                              ),
-                                              backgroundColor:
-                                                  MaterialStateProperty.all<
-                                                      Color>(
-                                                Color.fromARGB(255, 55, 142,
-                                                    242), // Set the background color to blue
                                               ),
                                             ),
-                                            child: const Text('Details'),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         );

@@ -18,7 +18,11 @@ class SalaryManagementPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Salary Management',
-          style: TextStyle(color: Colors.black), // Set title color to black
+          style: TextStyle(
+            color: Colors.black87, // Adjust text color for modern style
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         centerTitle: true,
         elevation: 0, // Remove the shadow

@@ -73,7 +73,11 @@ class _AllProfilePageState extends State<AllProfilePage> {
           ),
           title: Text(
             activeUser ? 'All User Profile' : 'Deactivated User',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.black87, // Adjust text color for modern style
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           centerTitle: true,
           actions: [
@@ -165,7 +169,10 @@ class _AllProfilePageState extends State<AllProfilePage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              Color.fromRGBO(229, 63, 248, 1)),
+                        ),
                         SizedBox(height: 10), // Adjust the height as needed
                         Text('Loading...'),
                       ],
@@ -216,143 +223,149 @@ class _AllProfilePageState extends State<AllProfilePage> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.all(8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: <Widget>[
-            // Left side: Employee details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${userData['name']}',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Color.fromRGBO(229, 63, 248, 1)),
-                  ),
-                  const SizedBox(
-                      height: 20), // Add space between Name and Position
-                  RichText(
-                    text: TextSpan(
-                      style: DefaultTextStyle.of(context).style,
-                      children: [
-                        TextSpan(
-                          text: 'Email: ',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors
-                                .black, // Set the default color for "Email:"
-                          ),
-                        ),
-                        TextSpan(
-                          text: userData['email'].length > 20
-                              ? '${userData['email'].substring(0, 20)}...'
-                              : userData['email'],
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Color.fromRGBO(229, 63, 248, 1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      style: DefaultTextStyle.of(context).style,
-                      children: [
-                        TextSpan(
-                          text: 'Phone: ',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors
-                                .black, // Set the default color for "Email:"
-                          ),
-                        ),
-                        TextSpan(
-                          text: userData['phone'],
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Color.fromRGBO(229, 63, 248, 1),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Add more details as needed
-                ],
-              ),
-            ),
-
-            // Right side: Profile image
-            const SizedBox(width: 16),
-            Column(
-              children: [
-                // Profile image
-                CircleAvatar(
-                  radius: 50,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: Image.network(
-                      userData['image'] ?? '',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        // Handle errors, e.g., display a default icon
-                        return const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+        margin: const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 5),
+        padding: const EdgeInsets.only(left: 5, right: 5),
+        child: Card(
+          elevation: 6,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: <Widget>[
+                // Left side: Employee details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${userData['name']}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Color.fromRGBO(229, 63, 248, 1)),
+                      ),
+                      const SizedBox(
+                          height: 20), // Add space between Name and Position
+                      RichText(
+                        text: TextSpan(
+                          style: DefaultTextStyle.of(context).style,
                           children: [
-                            Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                            Text(
-                              'No Image',
+                            TextSpan(
+                              text: 'Email: ',
                               style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
+                                fontSize: 15,
+                                color: Colors
+                                    .black, // Set the default color for "Email:"
+                              ),
+                            ),
+                            TextSpan(
+                              text: userData['email'].length > 20
+                                  ? '${userData['email'].substring(0, 20)}...'
+                                  : userData['email'],
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Color.fromRGBO(229, 63, 248, 1),
                               ),
                             ),
                           ],
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          style: DefaultTextStyle.of(context).style,
+                          children: [
+                            TextSpan(
+                              text: 'Phone: ',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors
+                                    .black, // Set the default color for "Email:"
+                              ),
+                            ),
+                            TextSpan(
+                              text: userData['phone'],
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Color.fromRGBO(229, 63, 248, 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Add more details as needed
+                    ],
                   ),
                 ),
-                const SizedBox(height: 5),
-                // Identity card icon and company ID
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+
+                // Right side: Profile image
+                const SizedBox(width: 16),
+                Column(
                   children: [
-                    // Identity card icon
-                    const Icon(
-                      Icons.credit_card,
-                      size: 20,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(
-                        width: 5), // Add space between icon and company ID
-                    // Company ID
-                    Text(
-                      '${userData['companyId']}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
+                    // Profile image
+                    CircleAvatar(
+                      radius: 50,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.network(
+                          userData['image'] ?? '',
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Handle errors, e.g., display a default icon
+                            return const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                                Text(
+                                  'No Image',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 5),
+                    // Identity card icon and company ID
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Identity card icon
+                        const Icon(
+                          Icons.credit_card,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(
+                            width: 5), // Add space between icon and company ID
+                        // Company ID
+                        Text(
+                          '${userData['companyId']}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

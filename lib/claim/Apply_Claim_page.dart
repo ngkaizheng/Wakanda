@@ -6,6 +6,8 @@ import 'package:flutter_application_1/data/data_model.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:path/path.dart' as path;
 
 final List<String> types = [
   'Medical',
@@ -42,6 +44,7 @@ class _ApplyClaim extends State<ApplyClaim> {
   bool isDataLoaded = false;
   String? pickedImagePath;
   String imageUrl = '';
+  String imageName = '';
 
   Timer? _timer;
   TextEditingController _textEditingController = TextEditingController();
@@ -100,11 +103,9 @@ class _ApplyClaim extends State<ApplyClaim> {
     super.dispose();
   }
 
-  Future<void> _createLeave() async {
-    logger.i("123");
-    logger.i(widget.companyId);
-    imageUrl =
-        await LeaveModel().uploadImage(pickedImagePath!, widget.companyId);
+  Future<void> _createClaim() async {
+    imageUrl = await LeaveModel()
+        .uploadImage(pickedImagePath!, widget.companyId, imageName);
     await LeaveModel().createClaim(widget.companyId, {
       'claimType': claimType,
       'claimDate': claimDate,
@@ -114,16 +115,18 @@ class _ApplyClaim extends State<ApplyClaim> {
       'status': status
     });
 
+    Navigator.pop(context, true);
+
     // Navigate back to the profile page
     // ignore: use_build_context_synchronously
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => MainPage(
-                companyId: widget.companyId,
-                userPosition: widget.userPosition,
-              )),
-    );
+    // Navigator.pop(
+    //   context,
+    //   MaterialPageRoute(
+    //       builder: (context) => MainPage(
+    //             companyId: widget.companyId,
+    //             userPosition: widget.userPosition,
+    //           )),
+    // );
   }
 
   @override
@@ -134,7 +137,11 @@ class _ApplyClaim extends State<ApplyClaim> {
           backgroundColor: const Color.fromARGB(255, 224, 45, 255),
           title: const Text(
             'Claim Application',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(
+              color: Colors.black87, // Adjust text color for modern style
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
           centerTitle: true,
           leading: IconButton(
@@ -143,14 +150,7 @@ class _ApplyClaim extends State<ApplyClaim> {
               color: Colors.black,
             ),
             onPressed: () {
-              Navigator.pop(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => MainPage(
-                          companyId: widget.companyId,
-                          userPosition: widget.userPosition,
-                        )),
-              );
+              Navigator.pop(context, true);
             },
           ),
         ),
@@ -257,7 +257,7 @@ class _ApplyClaim extends State<ApplyClaim> {
                       ),
                       Container(
                         width: 160, // Set the width as per your requirement
-                        height: 40, // Set the height as per your requirement
+                        height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
                           border: Border.all(color: Colors.grey),
@@ -314,7 +314,7 @@ class _ApplyClaim extends State<ApplyClaim> {
                       ),
                       Container(
                         width: 160, // Set the width as per your requirement
-                        height: 40, // Set the height as per your requirement
+                        height: 45, // Set the height as per your requirement
                         decoration: BoxDecoration(
                           color: const Color.fromARGB(255, 238, 238, 238),
                           border: Border.all(color: Colors.grey),
@@ -339,6 +339,10 @@ class _ApplyClaim extends State<ApplyClaim> {
                                   hintText: 'Amount',
                                 ),
                                 controller: _textEditingController,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                      RegExp(r'^\d+\.?\d{0,2}$')),
+                                ],
                                 onChanged: (value) {
                                   if (value.isNotEmpty) {
                                     claimAmount = double.parse(
@@ -377,25 +381,31 @@ class _ApplyClaim extends State<ApplyClaim> {
                   ),
                 ),
 
-                Container(
-                  width: 300, // Set the width as per your requirement
-                  height: 100, // Set the height as per your requirement
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 238, 238, 238),
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                    child: TextField(
-                      controller: _remarkController,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'remark (optimal)',
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    width: 300, // Set the width as per your requirement
+                    height: 80, // Set the height as per your requirement
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 238, 238, 238),
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: TextField(
+                        controller: _remarkController,
+                        maxLines:
+                            null, // Set to null to allow for multiple lines
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Optional Field',
+                        ),
                       ),
                     ),
                   ),
                 ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
 
                 GestureDetector(
                   onTap: () async {
@@ -408,7 +418,9 @@ class _ApplyClaim extends State<ApplyClaim> {
                       logger.i('Image picked: ${pickedFile.path}');
                       setState(() {
                         pickedImagePath = pickedFile.path;
+                        imageName = path.basename(pickedFile.path);
                       });
+                      logger.i('imageName $imageName');
                     }
                   },
                   // CircleAvatar for image upload indication
@@ -445,9 +457,7 @@ class _ApplyClaim extends State<ApplyClaim> {
                           ),
                   ),
                 ),
-
-                // Container(
-                //   margin: const EdgeInsets.all(20.0),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
                 ElevatedButton(
                   onPressed: () {
                     if (claimType == null ||
@@ -473,26 +483,40 @@ class _ApplyClaim extends State<ApplyClaim> {
                       remark = _remarkController.text.isNotEmpty
                           ? _remarkController.text
                           : '-';
-                      _createLeave();
-                      setState(() {});
+                      _createClaim();
                     }
                   },
                   style: ButtonStyle(
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
-                            20.0), // Set the corner radius
+                            30.0), // Set the corner radius
                       ),
                     ),
                     fixedSize: MaterialStateProperty.all<Size>(
-                      const Size(120, 40), // Set the width and height
+                      const Size(150, 50), // Set the width and height
                     ),
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                      const Color.fromARGB(255, 224, 45,
-                          255), // Set the background color to purple
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.pressed)) {
+                          // Color when pressed
+                          return Color.fromRGBO(229, 63, 248,
+                              1); // Change this to the desired pressed color
+                        }
+                        // Color when not pressed
+                        return Color.fromRGBO(240, 106, 255,
+                            1); // Change this to the desired normal color
+                      },
                     ),
                   ),
-                  child: const Text('Confirm'),
+                  child: const Text(
+                    'Confirm',
+                    style: TextStyle(
+                      fontSize: 17, // Set the font size
+                      fontWeight: FontWeight.bold, // Set the font weight
+                      color: Colors.white, // Set the font color
+                    ),
+                  ),
                 ),
               ],
             ),

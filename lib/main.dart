@@ -8,6 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_application_1/app.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/attendance/attendance_data.dart'; // Import the AttendanceData class
 
 class ReceivedNotification {
   ReceivedNotification({
@@ -108,5 +110,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AttendanceData(),
+      child: MyApp(),
+    ),
+  );
 }
+
