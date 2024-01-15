@@ -4,6 +4,8 @@ import 'package:flutter_application_1/leave/Apply_FullLeave_page.dart';
 import 'package:logger/logger.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_application_1/data/data_model.dart';
+import 'package:flutter_application_1/utils/checkholiday.dart';
+
 // import 'package:flutter_application_1/leave/Leave_main_page.dart';
 
 class HalfDayLeave extends StatefulWidget {
@@ -33,6 +35,8 @@ class _HalfDayLeave extends State<HalfDayLeave> {
   String status = 'pending';
   bool isDataLoaded = false;
 
+  String holidayDateCheck = "";
+
   DateTime now = DateTime.now();
 
   DateTime checkTodayWeekDay() {
@@ -48,6 +52,7 @@ class _HalfDayLeave extends State<HalfDayLeave> {
   }
 
   Future<void> _selectStartDate(BuildContext context) async {
+    holidayDateCheck = "";
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: checkTodayWeekDay(),
@@ -64,6 +69,15 @@ class _HalfDayLeave extends State<HalfDayLeave> {
       setState(() {
         startDate = pickedDate;
       });
+    }
+    if (pickedDate != null) {
+      if (await isPublicHoliday(pickedDate!) == true) {
+        int year = pickedDate.year;
+        int month = pickedDate.month;
+        int day = pickedDate.day;
+
+        holidayDateCheck = '$year-$month-$day';
+      }
     }
   }
 
@@ -366,6 +380,23 @@ class _HalfDayLeave extends State<HalfDayLeave> {
                           title: const Text('Empty Space Detected'),
                           content: const Text(
                               'Please fill in all the required information'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else if (holidayDateCheck != "") {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Holiday Date'),
+                          content: Text(
+                              'There is a public holiday on $holidayDateCheck, Please choose a different dates.'),
                           actions: [
                             TextButton(
                               onPressed: () {

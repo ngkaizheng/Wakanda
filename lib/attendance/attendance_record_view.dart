@@ -194,54 +194,58 @@ Future<void> transformGeoPoints(BuildContext context) async {
   List<Map<String, dynamic>> attendanceRecords = attendanceData.attendanceRecords;
   _currentAttendanceRecords = attendanceRecords;
 
-  //int lastCheckInIndex = checkInAddresses.length > 0 ? checkInAddresses.length - 1 : -1;
-  //int lastCheckOutIndex = checkOutAddresses.length > 0 ? checkOutAddresses.length - 1 : -1;
-
   print('Initial Length of checkInAddresses: ${checkInAddresses.length}');
   print('Initial Length of checkOutAddresses: ${checkOutAddresses.length}');
 
   for (var i = 0; i < attendanceRecords.length; i++) {
     print('Processing record at index $i');
-    
-    //if (i > lastCheckInIndex) {
-      print('Updating checkInAddresses for index $i');
-      String checkInAddress = await getAddressFromLocation(attendanceRecords[i]['CheckInLocation']);
-      //setState(() {
-              // Ensure that the list is long enough to set the value at index i
-      if (i >= checkInAddresses.length) {
-        checkInAddresses.add(checkInAddress);
-      } else {
-        checkInAddresses[i] = checkInAddress;
-      }
-      //});
-    //}
 
-    //if (i > lastCheckOutIndex) {
-      print('Updating checkOutAddresses for index $i');
-      String checkOutAddress = await getAddressFromLocation(attendanceRecords[i]['CheckOutLocation']);
-      //setState(() {
-        // Ensure that the list is long enough to set the value at index i
-      if (i >= checkOutAddresses.length) {
-        checkOutAddresses.add(checkOutAddress);
-      } else {
-        checkOutAddresses[i] = checkOutAddress;
-      }
-      //});
-    //}
+    print('Updating checkInAddresses for index $i');
+    String checkInAddress = await getAddressFromLocation(attendanceRecords[i]['CheckInLocation']);
     
-    // Print intermediate values for debugging
+    // Check if the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        if (i >= checkInAddresses.length) {
+          checkInAddresses.add(checkInAddress);
+        } else {
+          checkInAddresses[i] = checkInAddress;
+        }
+      });
+    }
+
+    print('Updating checkOutAddresses for index $i');
+    String checkOutAddress = await getAddressFromLocation(attendanceRecords[i]['CheckOutLocation']);
+    
+    // Check if the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        if (i >= checkOutAddresses.length) {
+          checkOutAddresses.add(checkOutAddress);
+        } else {
+          checkOutAddresses[i] = checkOutAddress;
+        }
+      });
+    }
+
     print('Intermediate Length of checkInAddresses: ${checkInAddresses.length}');
     print('Intermediate Length of checkOutAddresses: ${checkOutAddresses.length}');
-    //print('Intermediate lastCheckInIndex: $lastCheckInIndex');
-    //print('Intermediate lastCheckOutIndex: $lastCheckOutIndex');
   }
 
   print('Final Length of checkInAddresses: ${checkInAddresses.length}');
   print('Final Length of checkOutAddresses: ${checkOutAddresses.length}');
-  //print('Last index of checkInAddresses: $lastCheckInIndex');
-  //print('Last index of checkOutAddresses: $lastCheckOutIndex');
-  //print('Final $checkOutAddresses');
+
+  print('Final checkInAddresses:');
+  for (var address in this.checkInAddresses) {
+    print(address);
+  }
+
+  print('Final checkOutAddresses:');
+  for (var address in this.checkOutAddresses) {
+    print(address);
+  }
 }
+
 
 
 
@@ -909,10 +913,11 @@ Future<void> showCheckOutTimeEditingInterface(BuildContext context, int index) a
       : TimeOfDay(hour: 23, minute: 59);
   print("nextCheckInTime: $nextCheckInTime");
 
-  TimeOfDay? pickedTime = await showTimePicker(
-    context: context,
-    initialTime: _convertTimeStringToTimeOfDay(widget.attendanceRecords[index]['CheckOutTime']),
-  );
+TimeOfDay? pickedTime = await showTimePicker(
+  context: context,
+  initialTime: _convertTimeStringToTimeOfDay(widget.attendanceRecords[index]['CheckOutTime'] ?? '00:00:00') ?? TimeOfDay.now(),
+);
+
 
   if (pickedTime != null) {
     DateTime pickedDateTime = DateTime(1, 1, 1, pickedTime.hour, pickedTime.minute);
@@ -1334,7 +1339,7 @@ class PolishedDetailsWindow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: GestureDetector(
-        onTap: onClose,
+        //onTap: onClose,
         child: BouncingWidget(
           duration: Duration(milliseconds: 500),
           child: Container(

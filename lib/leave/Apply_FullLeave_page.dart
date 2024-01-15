@@ -39,6 +39,28 @@ class _ApplyLeave extends State<ApplyLeave> {
   bool isDataLoaded = false;
   DateTime now = DateTime.now();
 
+  String holidayDateCheck = '';
+
+  Future<String> hasPublicHolidayBetween(
+      DateTime? startDate, DateTime? endDate) async {
+    // Check for public holidays between startDate and endDate (inclusive)
+    DateTime currentDate = startDate!;
+    logger.i("currentDateBeforeProcess $currentDate");
+    while (currentDate.isBefore(endDate!) ||
+        currentDate.isAtSameMomentAs(endDate)) {
+      if (await isPublicHoliday(currentDate)) {
+        logger.i("currentDateHoliday $currentDate");
+        return "$currentDate"; // There is a public holiday between startDate and endDate
+      }
+
+      // Move to the next day
+      currentDate = currentDate.add(Duration(days: 1));
+    }
+    logger.i("currentDateBeforeEnd $currentDate");
+    // No public holiday found between startDate and endDate
+    return "";
+  }
+
   DateTime checkTodayWeekDay() {
     DateTime initialDate = startDate ?? DateTime.now();
 
@@ -52,6 +74,7 @@ class _ApplyLeave extends State<ApplyLeave> {
   }
 
   Future<void> _selectStartDate(BuildContext context) async {
+    holidayDateCheck = "";
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: checkTodayWeekDay(),
@@ -78,9 +101,13 @@ class _ApplyLeave extends State<ApplyLeave> {
         });
       }
     }
+    if (endDate != null) {
+      holidayDateCheck = await hasPublicHolidayBetween(pickedDate!, endDate!);
+    }
   }
 
   Future<void> _selectEndDate(BuildContext context) async {
+    holidayDateCheck = "";
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: endDate ?? checkTodayWeekDay(),
@@ -135,6 +162,9 @@ class _ApplyLeave extends State<ApplyLeave> {
           ),
         );
       }
+    }
+    if (startDate != null) {
+      holidayDateCheck = await hasPublicHolidayBetween(startDate!, pickedDate!);
     }
   }
 
@@ -634,7 +664,7 @@ class _ApplyLeave extends State<ApplyLeave> {
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height * 0.025),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (startDate == null ||
                         endDate == null ||
                         reason == null) {
@@ -652,6 +682,31 @@ class _ApplyLeave extends State<ApplyLeave> {
                                 logger.i('reason $reason');
                                 logger.i('leaveDay $leaveDay');
                                 logger.i('leaveDay ${leaveDay is double}');
+                                Navigator.pop(context);
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else if (holidayDateCheck != "") {
+                      logger.i("holidayDateCheckInDialog $holidayDateCheck");
+                      // logger.i(
+                      //     "hasPublicHolidayBetween(startDate!, endDate!) ${hasPublicHolidayBetween(startDate!, endDate!) != }");
+                      // // String holidayDate =
+                      //     await hasPublicHolidayBetween(startDate!, endDate!);
+                      String formattedHolidayDate = holidayDateCheck
+                          .split(' ')[0]; // Extracting yyyy-mm-dd
+
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Holiday Date'),
+                          content: Text(
+                              'There is a public holiday on $formattedHolidayDate, Please choose a different dates.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
                                 Navigator.pop(context);
                               },
                               child: const Text('OK'),
