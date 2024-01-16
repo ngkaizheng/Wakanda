@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    permissions: write-all
     name: Build & Release
     runs-on: windows-latest
 
