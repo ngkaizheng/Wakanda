@@ -79,7 +79,8 @@ class _HomePageState extends State<HomePage> {
         final userData = doc.data() as Map<String, dynamic>;
 
         if (userData['companyId'] == companyId &&
-            await signIn(userData['email'], password)) {
+            await signIn(userData['email'], password) &&
+            userData['status'] == true) {
           userPosition = userData['position'];
           return true; // Credentials match a user document
         }
@@ -138,7 +139,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   } else {
-                    if (dataSnapshot.hasData) {
+                    if (dataSnapshot.hasData &&
+                        dataSnapshot.data?['status'] == true) {
                       final companyId = dataSnapshot.data?['companyId'];
                       final userPosition = dataSnapshot.data?['userPosition'];
 
@@ -146,6 +148,10 @@ class _HomePageState extends State<HomePage> {
                         companyId: companyId,
                         userPosition: userPosition,
                       );
+                    } else if (dataSnapshot.hasData &&
+                        dataSnapshot.data?['status'] != true) {
+                      FirebaseAuth.instance.signOut();
+                      return buildLoginPage();
                     } else {
                       return buildLoginPage();
                     }
